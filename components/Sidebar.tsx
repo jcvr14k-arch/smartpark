@@ -19,13 +19,14 @@ import {
   X,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import type { UserRole } from '@/types';
 
 type MenuItem = {
   href: string;
   label: string;
-  icon: React.ComponentType<{ size?: number }>;
+  icon: LucideIcon;
   roles: UserRole[];
 };
 
@@ -76,7 +77,9 @@ export default function Sidebar() {
       </button>
 
       <aside
-        className={`sidebar-shell ${open ? 'fixed inset-y-4 left-4 right-4 z-40 block' : 'hidden'} lg:sticky lg:top-6 lg:block`}
+        className={`sidebar-shell ${
+          open ? 'fixed inset-y-4 left-4 right-4 z-40 block' : 'hidden'
+        } lg:sticky lg:top-6 lg:block`}
       >
         <div>
           <div className="mb-8 flex items-center gap-3 px-2">
