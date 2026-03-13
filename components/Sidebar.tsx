@@ -49,7 +49,10 @@ export default function Sidebar() {
   const [open, setOpen] = useState(false);
 
   const allowedMenu = useMemo(
-    () => menu.filter((item) => (profile ? item.roles.includes(profile.role as UserRole) : false)),
+    () =>
+      menu.filter((item) =>
+        profile ? item.roles.some((role) => role === profile.role) : false
+      ),
     [profile]
   );
 
