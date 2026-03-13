@@ -7,8 +7,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const { signIn } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@parksmart.com');
+  const [password, setPassword] = useState('Kimosabe');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
