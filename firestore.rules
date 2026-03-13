@@ -1,0 +1,45 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return signedIn() && me().role == 'admin' && me().active != false;
+    }
+
+    function isOperator() {
+      return signedIn() && (me().role == 'admin' || me().role == 'vendedor') && me().active != false;
+    }
+
+    match /users/{userId} {
+      allow read: if isOperator();
+      allow create, update: if isAdmin();
+    }
+
+    match /priceSettings/{docId} {
+      allow read: if isOperator();
+      allow write: if isAdmin();
+    }
+
+    match /cashRegisters/{docId} {
+      allow read: if isOperator();
+      allow create, update: if isOperator();
+    }
+
+    match /parkingTickets/{docId} {
+      allow read: if isOperator();
+      allow create, update: if isOperator();
+    }
+
+    match /monthlyCustomers/{docId} {
+      allow read: if isOperator();
+      allow create, update: if isOperator();
+    }
+  }
+}
