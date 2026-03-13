@@ -61,6 +61,10 @@ export interface ParkingTicket {
   parkingSpaceId?: string;
   parkingSpaceCode?: string;
   monthlyCustomerId?: string;
+  entryOperatorId?: string;
+  entryOperatorName?: string;
+  exitOperatorId?: string;
+  exitOperatorName?: string;
 }
 
 export interface CashWithdrawal {
