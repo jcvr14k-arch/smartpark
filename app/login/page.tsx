@@ -28,7 +28,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-app px-4 py-6 md:px-6 md:py-8">
-      <div className="mx-auto grid min-h-[calc(100vh-48px)] max-w-7xl items-stretch gap-6 xl:grid-cols-[1.02fr,0.98fr]">
+      <div className="mx-auto grid min-h-[calc(100vh-48px)] max-w-7xl items-center gap-6 xl:grid-cols-[0.96fr,1.04fr]">
         <div className="relative hidden overflow-hidden rounded-[40px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 p-8 text-white shadow-[0_20px_60px_rgba(15,23,42,0.18)] xl:flex xl:flex-col xl:justify-between">
           <div className="absolute inset-0 opacity-30">
             <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-blue-500 blur-3xl" />
@@ -41,36 +41,45 @@ export default function LoginPage() {
               Plataforma profissional para gestão de estacionamento
             </div>
 
-            <div className="mt-8 flex items-center gap-4">
-              <div className="rounded-[28px] bg-white p-3 shadow-lg">
+            <div className="mt-7 flex items-center gap-4">
+              <div className="rounded-[24px] bg-white p-3 shadow-lg">
                 <Image
-                  src="/logo-smartpark.svg"
+                  src="/icon-smartpark.svg"
                   alt="SmartPark"
-                  width={170}
-                  height={62}
+                  width={110}
+                  height={110}
                   priority
-                  className="h-auto w-[170px]"
+                  className="h-[110px] w-[110px] object-contain"
                 />
+              </div>
+
+              <div className="min-w-0">
+                <h1 className="text-3xl font-bold leading-none text-white">
+                  SmartPark
+                </h1>
+                <p className="mt-2 text-sm font-medium text-white/70">
+                  Seu Estacionamento Inteligente
+                </p>
               </div>
             </div>
 
-            <h1 className="mt-8 max-w-lg text-4xl font-semibold leading-[1.12]">
+            <h2 className="mt-8 max-w-lg text-[38px] font-semibold leading-[1.08]">
               Controle moderno e inteligente para a gestão do seu estacionamento.
-            </h1>
+            </h2>
 
             <p className="mt-4 max-w-xl text-[15px] leading-7 text-white/75">
               Gerencie entradas, saídas, mensalistas, vagas, caixa e relatórios em um só lugar,
-              com agilidade para a operação e visual profissional para o dia a dia.
+              com mais agilidade na operação e visual profissional no dia a dia.
             </p>
           </div>
 
-          <div className="relative z-10 grid gap-3 md:grid-cols-3">
+          <div className="relative z-10 mt-8 grid gap-3 md:grid-cols-3">
             <div className="rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur-md">
               <div className="mb-3 inline-flex rounded-2xl bg-white/10 p-3">
                 <ShieldCheck size={20} />
               </div>
               <p className="text-sm font-semibold">Acesso seguro</p>
-              <p className="mt-2 text-sm text-white/70">
+              <p className="mt-2 text-sm leading-6 text-white/70">
                 Controle por perfil de usuário com navegação protegida.
               </p>
             </div>
@@ -80,7 +89,7 @@ export default function LoginPage() {
                 <Sparkles size={20} />
               </div>
               <p className="text-sm font-semibold">Operação rápida</p>
-              <p className="mt-2 text-sm text-white/70">
+              <p className="mt-2 text-sm leading-6 text-white/70">
                 Fluxo pensado para entrada, saída e impressão sem complicação.
               </p>
             </div>
@@ -90,7 +99,7 @@ export default function LoginPage() {
                 <ShieldCheck size={20} />
               </div>
               <p className="text-sm font-semibold">Gestão inteligente</p>
-              <p className="mt-2 text-sm text-white/70">
+              <p className="mt-2 text-sm leading-6 text-white/70">
                 Relatórios, caixa, vagas e mensalistas em um painel central.
               </p>
             </div>
