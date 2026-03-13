@@ -43,33 +43,31 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="mt-8 flex items-center gap-4">
+            <div className="mt-8 flex flex-col items-center text-center">
               <div className="rounded-[22px] bg-white p-2.5 shadow-lg">
                 <Image
                   src="/icon-smartpark.svg"
                   alt="SmartPark"
-                  width={88}
-                  height={88}
+                  width={78}
+                  height={78}
                   priority
-                  className="h-[88px] w-[88px] object-contain"
+                  className="h-[78px] w-[78px] object-contain"
                 />
               </div>
 
-              <div className="min-w-0">
-                <h1 className="text-[24px] font-bold leading-none text-white">
-                  SmartPark
-                </h1>
-                <p className="mt-2 text-sm font-medium text-white/70">
-                  Seu Estacionamento Inteligente
-                </p>
-              </div>
+              <h1 className="mt-4 text-[24px] font-bold leading-none text-white">
+                SmartPark
+              </h1>
+              <p className="mt-2 text-sm font-medium text-white/70">
+                Seu Estacionamento Inteligente
+              </p>
             </div>
 
-            <h2 className="mt-8 max-w-lg text-[30px] font-semibold leading-[1.1]">
+            <h2 className="mx-auto mt-8 max-w-[520px] text-center text-[24px] font-semibold leading-[1.18]">
               Controle moderno e inteligente para a gestão do seu estacionamento.
             </h2>
 
-            <p className="mt-4 max-w-xl text-[15px] leading-7 text-white/75">
+            <p className="mx-auto mt-4 max-w-[560px] text-center text-[15px] leading-7 text-white/75">
               Gerencie entradas, saídas, mensalistas, vagas, caixa e relatórios em um só lugar,
               com mais agilidade na operação e visual profissional no dia a dia.
             </p>
