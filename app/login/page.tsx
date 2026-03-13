@@ -36,25 +36,27 @@ export default function LoginPage() {
           </div>
 
           <div className="relative z-10">
-            <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">
-              <Sparkles size={16} className="mr-2" />
-              Plataforma profissional para gestão de estacionamento
+            <div className="flex justify-center">
+              <div className="inline-flex items-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur-md">
+                <Sparkles size={16} className="mr-2" />
+                Plataforma profissional para gestão de estacionamento
+              </div>
             </div>
 
-            <div className="mt-7 flex items-center gap-4">
-              <div className="rounded-[24px] bg-white p-3 shadow-lg">
+            <div className="mt-8 flex items-center gap-4">
+              <div className="rounded-[22px] bg-white p-2.5 shadow-lg">
                 <Image
                   src="/icon-smartpark.svg"
                   alt="SmartPark"
-                  width={110}
-                  height={110}
+                  width={88}
+                  height={88}
                   priority
-                  className="h-[110px] w-[110px] object-contain"
+                  className="h-[88px] w-[88px] object-contain"
                 />
               </div>
 
               <div className="min-w-0">
-                <h1 className="text-3xl font-bold leading-none text-white">
+                <h1 className="text-[24px] font-bold leading-none text-white">
                   SmartPark
                 </h1>
                 <p className="mt-2 text-sm font-medium text-white/70">
@@ -63,7 +65,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <h2 className="mt-8 max-w-lg text-[38px] font-semibold leading-[1.08]">
+            <h2 className="mt-8 max-w-lg text-[30px] font-semibold leading-[1.1]">
               Controle moderno e inteligente para a gestão do seu estacionamento.
             </h2>
 
