@@ -7,8 +7,8 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const { signIn } = useAuth();
-  const [email, setEmail] = useState('admin@parksmart.com');
-  const [password, setPassword] = useState('Kimosabe');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -28,8 +28,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-app px-4 py-6 md:px-6 md:py-8">
-      <div className="mx-auto grid min-h-[calc(100vh-48px)] max-w-7xl items-stretch gap-6 xl:grid-cols-[1.08fr,0.92fr]">
-        <div className="relative hidden overflow-hidden rounded-[40px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 p-10 text-white shadow-[0_20px_60px_rgba(15,23,42,0.18)] xl:flex xl:flex-col xl:justify-between">
+      <div className="mx-auto grid min-h-[calc(100vh-48px)] max-w-7xl items-stretch gap-6 xl:grid-cols-[1.02fr,0.98fr]">
+        <div className="relative hidden overflow-hidden rounded-[40px] border border-slate-200 bg-gradient-to-br from-slate-950 via-slate-900 to-blue-900 p-8 text-white shadow-[0_20px_60px_rgba(15,23,42,0.18)] xl:flex xl:flex-col xl:justify-between">
           <div className="absolute inset-0 opacity-30">
             <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-blue-500 blur-3xl" />
             <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-cyan-400 blur-3xl" />
@@ -46,26 +46,26 @@ export default function LoginPage() {
                 <Image
                   src="/logo-smartpark.svg"
                   alt="SmartPark"
-                  width={220}
-                  height={80}
+                  width={170}
+                  height={62}
                   priority
-                  className="h-auto w-[220px]"
+                  className="h-auto w-[170px]"
                 />
               </div>
             </div>
 
-            <h1 className="mt-10 max-w-xl text-5xl font-semibold leading-tight">
-              Controle total do seu estacionamento em uma experiência moderna e fluida.
+            <h1 className="mt-8 max-w-lg text-4xl font-semibold leading-[1.12]">
+              Controle moderno e inteligente para a gestão do seu estacionamento.
             </h1>
 
-            <p className="mt-5 max-w-2xl text-base leading-7 text-white/75">
+            <p className="mt-4 max-w-xl text-[15px] leading-7 text-white/75">
               Gerencie entradas, saídas, mensalistas, vagas, caixa e relatórios em um só lugar,
               com agilidade para a operação e visual profissional para o dia a dia.
             </p>
           </div>
 
-          <div className="relative z-10 grid gap-4 md:grid-cols-3">
-            <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-md">
+          <div className="relative z-10 grid gap-3 md:grid-cols-3">
+            <div className="rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur-md">
               <div className="mb-3 inline-flex rounded-2xl bg-white/10 p-3">
                 <ShieldCheck size={20} />
               </div>
@@ -75,7 +75,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-md">
+            <div className="rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur-md">
               <div className="mb-3 inline-flex rounded-2xl bg-white/10 p-3">
                 <Sparkles size={20} />
               </div>
@@ -85,7 +85,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <div className="rounded-[28px] border border-white/10 bg-white/10 p-5 backdrop-blur-md">
+            <div className="rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur-md">
               <div className="mb-3 inline-flex rounded-2xl bg-white/10 p-3">
                 <ShieldCheck size={20} />
               </div>
