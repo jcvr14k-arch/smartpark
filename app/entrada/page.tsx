@@ -99,6 +99,8 @@ export default function EntradaPage() {
         vehicleType,
         status: 'ativo' as const,
         entryAt: new Date().toISOString(),
+        entryOperatorId: profile.id,
+        entryOperatorName: profile.name,
         cashierId: profile.id,
         cashierName: profile.name,
         parkingSpaceId: selectedSpace?.id || '',
@@ -183,6 +185,7 @@ export default function EntradaPage() {
             <button className="primary-button w-full justify-center" disabled={loading}>
               {loading ? 'Registrando...' : 'Registrar Entrada'}
             </button>
+
             {message ? <p className="text-sm text-blue-700">{message}</p> : null}
           </form>
 
@@ -195,23 +198,46 @@ export default function EntradaPage() {
                 </div>
                 <div className="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-700">{createdTicket.shortTicket}</div>
               </div>
+
               <div className="space-y-2 text-sm text-slate-600">
-                <div className="flex justify-between"><span>Placa</span><strong className="text-slate-900">{createdTicket.plate || '-'}</strong></div>
-                <div className="flex justify-between"><span>Tipo</span><strong className="text-slate-900">{createdTicket.vehicleType}</strong></div>
-                <div className="flex justify-between"><span>Vaga</span><strong className="text-slate-900">{createdTicket.parkingSpaceCode || '-'}</strong></div>
+                <div className="flex justify-between">
+                  <span>Placa</span>
+                  <strong className="text-slate-900">{createdTicket.plate || '-'}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tipo</span>
+                  <strong className="text-slate-900">{createdTicket.vehicleType}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Vaga</span>
+                  <strong className="text-slate-900">{createdTicket.parkingSpaceCode || '-'}</strong>
+                </div>
               </div>
+
               <div className="mt-4 flex flex-wrap gap-3">
-                <button className="primary-button" type="button" onClick={() => openPrintPage(`/print/entrada/${createdTicket.id}`)}>
-                  <Printer size={16} />Imprimir Ticket
+                <button
+                  className="primary-button"
+                  type="button"
+                  onClick={() => openPrintPage(`/print/entrada/${createdTicket.id}`)}
+                >
+                  <Printer size={16} />
+                  Imprimir Ticket
                 </button>
+
                 <a
                   className={`secondary-button ${!whatsappEntryUrl ? 'pointer-events-none opacity-50' : ''}`}
                   href={whatsappEntryUrl || '#'}
                   target="_blank"
                 >
-                  <MessageCircleMore size={16} />Enviar WhatsApp
+                  <MessageCircleMore size={16} />
+                  Enviar WhatsApp
                 </a>
-                <button className="secondary-button" type="button" onClick={() => setCreatedTicket(null)}>
+
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => setCreatedTicket(null)}
+                >
                   Nova Entrada
                 </button>
               </div>
@@ -231,17 +257,23 @@ export default function EntradaPage() {
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {availableSpaces.length ? availableSpaces.map((space) => (
-              <button
-                key={space.id}
-                type="button"
-                onClick={() => setSelectedSpaceId(space.id === selectedSpaceId ? '' : space.id)}
-                className={`space-card ${selectedSpaceId === space.id ? 'selection-card-active' : 'space-card-free'}`}
-              >
-                <p className="text-sm font-semibold">{space.code}</p>
-                <p className="mt-1 text-xs">Livre</p>
-              </button>
-            )) : <div className="col-span-full empty-state min-h-[220px]"><p className="text-sm text-slate-500">Nenhuma vaga livre disponível.</p></div>}
+            {availableSpaces.length ? (
+              availableSpaces.map((space) => (
+                <button
+                  key={space.id}
+                  type="button"
+                  onClick={() => setSelectedSpaceId(space.id === selectedSpaceId ? '' : space.id)}
+                  className={`space-card ${selectedSpaceId === space.id ? 'selection-card-active' : 'space-card-free'}`}
+                >
+                  <p className="text-sm font-semibold">{space.code}</p>
+                  <p className="mt-1 text-xs">Livre</p>
+                </button>
+              ))
+            ) : (
+              <div className="col-span-full empty-state min-h-[220px]">
+                <p className="text-sm text-slate-500">Nenhuma vaga livre disponível.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
