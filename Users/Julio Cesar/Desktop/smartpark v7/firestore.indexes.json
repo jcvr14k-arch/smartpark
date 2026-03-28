@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "parkingTickets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "exitAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "cashRegisters",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "operatorId", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

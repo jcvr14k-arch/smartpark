@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function me() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function normalizedTenantId() {
+      return me().tenantId != null ? me().tenantId : 'default';
+    }
+
+    function isAdmin() {
+      return signedIn() && me().role == 'admin' && me().active != false;
+    }
+
+    function isOperator() {
+      return signedIn() && (me().role == 'admin' || me().role == 'vendedor') && me().active != false;
+    }
+
+    function tenantMatches(tenantId) {
+      return signedIn() && normalizedTenantId() == tenantId;
+    }
+
+    match /users/{userId} {
+      allow read: if isOperator();
+      allow create: if isAdmin() || (signedIn() && request.auth.uid == userId);
+      allow update: if isAdmin() || (signedIn() && request.auth.uid == userId);
+    }
+
+    match /settings/{docId} {
+      allow read, write: if isOperator();
+    }
+
+    match /parkingSpaces/{docId} {
+      allow read, write: if isOperator();
+    }
+
+    match /priceSettings/{docId} {
+      allow read: if isOperator();
+      allow write: if isAdmin();
+    }
+
+    match /cashRegisters/{docId} {
+      allow read: if isOperator();
+      allow create, update: if isOperator();
+    }
+
+    match /parkingTickets/{docId} {
+      allow read: if isOperator();
+      allow create, update: if isOperator();
+    }
+
+    match /monthlyCustomers/{docId} {
+      allow read: if isOperator();
+      allow create, update: if isOperator();
+    }
+
+    match /tenants/{tenantId}/{document=**} {
+      allow read, write: if tenantMatches(tenantId) && isOperator();
+    }
+  }
+}

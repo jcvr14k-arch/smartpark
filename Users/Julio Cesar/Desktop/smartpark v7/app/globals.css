@@ -1,0 +1,432 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: linear-gradient(180deg, #f6f8fc 0%, #eef3f9 100%);
+  color: #0f172a;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+@layer components {
+  .bg-app {
+    background:
+      radial-gradient(circle at top left, rgba(59, 130, 246, 0.08), transparent 28%),
+      radial-gradient(circle at right, rgba(148, 163, 184, 0.08), transparent 20%),
+      linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  }
+
+  .panel-card {
+    @apply rounded-[28px] border border-slate-200 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.06)];
+  }
+
+  .sidebar-shell {
+    @apply h-fit w-full max-w-[280px] rounded-[30px] border border-slate-200 bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,0.06)] lg:min-h-[calc(100vh-48px)] lg:w-[280px];
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900;
+  }
+
+  .sidebar-link-active {
+    @apply bg-blue-50 text-blue-700;
+  }
+
+  .primary-button {
+    @apply inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-sm shadow-blue-200 transition hover:bg-blue-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .secondary-button {
+    @apply inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .primary-outline {
+    @apply inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50;
+  }
+
+  .app-input {
+    @apply h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100;
+  }
+
+  .app-textarea {
+    @apply min-h-[120px] w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100;
+  }
+
+  .pill-tab {
+    @apply inline-flex rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50;
+  }
+
+  .pill-tab-active {
+    @apply border-blue-200 bg-blue-50 text-blue-700;
+  }
+
+  .table-shell {
+    @apply overflow-x-auto rounded-[28px] border border-slate-200 bg-white;
+  }
+
+  .table-shell table {
+    @apply min-w-full border-collapse;
+  }
+
+  .table-shell thead {
+    @apply bg-slate-50;
+  }
+
+  .table-shell th,
+  .table-shell td {
+    @apply border-b border-slate-100 px-4 py-3 text-left text-sm;
+  }
+
+  .table-shell th {
+    @apply font-semibold text-slate-500;
+  }
+
+  .table-shell td {
+    @apply text-slate-700;
+  }
+
+  .empty-state {
+    @apply flex min-h-[280px] flex-col items-center justify-center rounded-[28px] border border-dashed border-slate-200 bg-white p-8 text-center;
+  }
+
+  .icon-soft-blue {
+    @apply rounded-2xl bg-blue-50 p-3 text-blue-600;
+  }
+
+  .icon-soft-green {
+    @apply rounded-2xl bg-emerald-50 p-3 text-emerald-600;
+  }
+
+  .icon-soft-red {
+    @apply rounded-2xl bg-rose-50 p-3 text-rose-600;
+  }
+
+  .selection-card {
+    @apply flex min-h-[132px] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-[24px] border border-slate-200 bg-white px-3 py-4 text-center transition hover:border-blue-300 hover:bg-blue-50/50;
+  }
+
+  .selection-card-title {
+    @apply break-words text-center text-[13px] font-semibold leading-tight text-slate-900 sm:text-[15px];
+  }
+
+  .selection-card-active {
+    @apply border-blue-300 bg-blue-50 shadow-sm shadow-blue-100;
+  }
+
+  .space-card {
+    @apply rounded-2xl border border-slate-200 bg-white p-4 transition;
+  }
+
+  .space-card-free {
+    @apply border-emerald-200 bg-emerald-50 text-emerald-700;
+  }
+
+  .space-card-busy {
+    @apply border-rose-200 bg-rose-50 text-rose-700;
+  }
+
+  .space-card-inactive {
+    @apply border-slate-200 bg-slate-100 text-slate-500;
+  }
+
+  .danger-pulse {
+    animation: smartparkPulse 1.25s ease-in-out infinite;
+  }
+}
+
+@keyframes smartparkPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.app-shell-inner {
+  margin: 0 auto;
+  display: flex;
+  max-width: 1440px;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.app-main-area {
+  min-width: 0;
+  flex: 1;
+  min-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+}
+
+.app-content {
+  flex: 1;
+}
+
+.app-footer {
+  margin-top: auto;
+  padding: 20px 0 12px;
+  text-align: center;
+  color: #64748b;
+}
+
+.app-footer-main {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.app-footer-sub {
+  font-size: 11px;
+  line-height: 1.4;
+  margin: 4px 0 0;
+  color: #94a3b8;
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    padding: 24px;
+  }
+
+  .app-shell-inner {
+    flex-direction: row;
+  }
+
+  .app-main-area {
+    min-height: calc(100vh - 48px);
+  }
+}
+
+.print-ticket-page {
+  display: flex;
+  justify-content: center;
+  padding: 12px;
+  background: #f3f4f6;
+  min-height: 100vh;
+}
+
+.print-ticket {
+  width: 80mm;
+  background: #fff;
+  color: #111827;
+  padding: 4mm 3.5mm 3mm;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  box-shadow: 0 0 0 1px #e5e7eb, 0 12px 30px rgba(15, 23, 42, 0.10);
+}
+
+.ticket-header {
+  text-align: center;
+  margin-bottom: 3mm;
+}
+
+.ticket-company {
+  text-align: center;
+  font-size: 5.6mm;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0;
+  margin-bottom: 1.2mm;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* AJUSTADO PARA IMPRESSORA TÉRMICA */
+.ticket-company-sub {
+  font-size: 2.9mm;
+  font-weight: 500;
+  line-height: 1.25;
+  color: #000;
+  margin-bottom: 0.8mm;
+}
+
+.ticket-company-meta {
+  display: flex;
+  justify-content: center;
+  gap: 2.2mm;
+  flex-wrap: wrap;
+  font-size: 2.8mm;
+  line-height: 1.2;
+  color: #000;
+  font-weight: 500;
+}
+
+.ticket-dashed {
+  border-top: 0.35mm dashed #94a3b8;
+  margin: 3mm 0;
+}
+
+.ticket-label-top {
+  text-align: center;
+  font-size: 3.8mm;
+  color: #000;
+  font-weight: 500;
+  margin-bottom: 1.5mm;
+}
+
+.ticket-code {
+  text-align: center;
+  font-size: 12mm;
+  font-weight: 600;
+  letter-spacing: 0.6mm;
+  line-height: 1;
+  color: #000;
+  margin-bottom: 3mm;
+}
+
+.ticket-subtitle {
+  text-align: center;
+  font-size: 4.3mm;
+  font-weight: 600;
+  color: #000;
+  margin: 1.5mm 0 2.5mm;
+}
+
+.ticket-qr-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 1.5mm 0 3.5mm;
+}
+
+.ticket-qr {
+  width: 31mm;
+  height: 31mm;
+  image-rendering: pixelated;
+}
+
+.ticket-row,
+.ticket-info-row,
+.ticket-text-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 3mm;
+  margin: 1.6mm 0;
+  font-size: 4.3mm;
+  line-height: 1.35;
+}
+
+/* AJUSTADO PARA IMPRESSORA TÉRMICA */
+.ticket-row-label,
+.ticket-info-row span,
+.ticket-text-row .left {
+  color: #000;
+  font-weight: 500;
+}
+
+.ticket-row-value,
+.ticket-info-row strong,
+.ticket-text-row .right {
+  color: #111827;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* AJUSTADO PARA IMPRESSORA TÉRMICA */
+.ticket-footer {
+  text-align: center;
+  font-size: 2.6mm;
+  line-height: 1.2;
+  color: #000;
+  font-weight: 500;
+  margin-top: 1.8mm;
+}
+
+.ticket-footer p {
+  margin: 0 0 0.6mm;
+}
+
+.cut-space {
+  height: 14mm;
+}
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  html,
+  body {
+    width: 80mm;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-ticket-page {
+    display: block;
+    min-height: auto;
+    padding: 0;
+    background: #fff;
+  }
+
+  .print-ticket {
+    box-shadow: none;
+  }
+}
+
+.support-float-button {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  border-radius: 9999px;
+  background: #25d366;
+  color: #fff;
+  padding: 14px 18px;
+  box-shadow: 0 12px 24px rgba(37, 211, 102, 0.28);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .support-float-button {
+    right: 16px;
+    bottom: 16px;
+    padding: 12px 16px;
+  }
+}
