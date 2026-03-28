@@ -25,7 +25,7 @@ const RawbtToolbar = ({ onPrint, onShare }: { onPrint: () => void; onShare: () =
     </div>
     <div className="rawbt-actions">
       <button type="button" onClick={onPrint}>Imprimir</button>
-      {typeof navigator !== 'undefined' && navigator.share ? (
+      {typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? (
         <button type="button" onClick={onShare}>Compartilhar</button>
       ) : null}
     </div>
