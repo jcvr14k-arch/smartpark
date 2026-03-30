@@ -20,8 +20,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import type { UserRole } from '@/types';
 
-const menu = [
+const menu: ReadonlyArray<{ href: string; label: string; icon: any; roles: UserRole[] }> = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'vendedor'] },
   { href: '/entrada', label: 'Entrada', icon: Car, roles: ['admin', 'vendedor'] },
   { href: '/saida', label: 'Saída', icon: CreditCard, roles: ['admin', 'vendedor'] },
@@ -32,7 +33,7 @@ const menu = [
   { href: '/relatorios', label: 'Relatórios', icon: BarChart3, roles: ['admin'] },
   { href: '/usuarios', label: 'Usuários', icon: ShieldCheck, roles: ['admin'] },
   { href: '/configuracoes', label: 'Configurações', icon: Settings, roles: ['admin', 'vendedor'] },
-] as const;
+];
 
 export default function Sidebar() {
   const pathname = usePathname();
