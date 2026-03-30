@@ -1,13 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getDoc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import { CarFront, CreditCard, MessageCircleMore, Printer, ScanQrCode } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 import QrScanner from '@/components/QrScanner';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
-import { tenantCollection, tenantDoc } from '@/lib/tenant';
 import { openPrintPage } from '@/lib/print';
 import { CashRegister, EstablishmentSettings, MonthlyCustomer, ParkingSpace, ParkingTicket, PaymentMethod, PriceSetting } from '@/types';
 import { formatDurationMinutes, money, plateMask, shortDateTime } from '@/utils/format';
@@ -31,23 +30,23 @@ export default function SaidaPage() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const unsubTickets = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'parkingTickets'), where('status', '==', 'ativo')), (snapshot) => {
+    const unsubTickets = onSnapshot(query(collection(db, 'parkingTickets'), where('status', '==', 'ativo')), (snapshot) => {
       setTickets(snapshot.docs.map((item) => ({ id: item.id, ...(item.data() as Omit<ParkingTicket, 'id'>) })));
     });
-    const unsubSpaces = onSnapshot(tenantCollection(db, profile?.tenantId, 'parkingSpaces'), (snapshot) => {
+    const unsubSpaces = onSnapshot(collection(db, 'parkingSpaces'), (snapshot) => {
       setSpaces(snapshot.docs.map((item) => ({ id: item.id, ...(item.data() as Omit<ParkingSpace, 'id'>) })));
     });
-    const unsubPrices = onSnapshot(tenantCollection(db, profile?.tenantId, 'priceSettings'), (snapshot) => {
+    const unsubPrices = onSnapshot(collection(db, 'priceSettings'), (snapshot) => {
       setPriceSettings(snapshot.docs.map((item) => ({ id: item.id, ...(item.data() as Omit<PriceSetting, 'id'>) })));
     });
-    const unsubMonthly = onSnapshot(tenantCollection(db, profile?.tenantId, 'monthlyCustomers'), (snapshot) => {
+    const unsubMonthly = onSnapshot(collection(db, 'monthlyCustomers'), (snapshot) => {
       setMonthlyCustomers(snapshot.docs.map((item) => ({ id: item.id, ...(item.data() as Omit<MonthlyCustomer, 'id'>) })));
     });
-    getDoc(tenantDoc(db, profile?.tenantId, 'settings', 'establishment')).then((snap) => {
+    getDoc(doc(db, 'settings', 'establishment')).then((snap) => {
       if (snap.exists()) setSettings(snap.data() as EstablishmentSettings);
     });
     if (!profile) return () => { unsubTickets(); unsubSpaces(); unsubPrices(); unsubMonthly(); };
-    const unsubCash = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'cashRegisters'), where('status', '==', 'aberto'), where('operatorId', '==', profile.id)), (snapshot) => {
+    const unsubCash = onSnapshot(query(collection(db, 'cashRegisters'), where('status', '==', 'aberto'), where('operatorId', '==', profile.id)), (snapshot) => {
       const row = snapshot.docs[0];
       setOpenCashRegister(row ? { id: row.id, ...(row.data() as Omit<CashRegister, 'id'>) } : null);
     });
@@ -108,16 +107,16 @@ export default function SaidaPage() {
       paymentMethod,
       closedCashRegisterId: openCashRegister.id,
     };
-    await updateDoc(tenantDoc(db, profile?.tenantId, 'parkingTickets', preview.ticket.id), finalizedData);
+    await updateDoc(doc(db, 'parkingTickets', preview.ticket.id), finalizedData);
     if (preview.ticket.parkingSpaceId) {
-      await updateDoc(tenantDoc(db, profile?.tenantId, 'parkingSpaces', preview.ticket.parkingSpaceId), {
+      await updateDoc(doc(db, 'parkingSpaces', preview.ticket.parkingSpaceId), {
         status: 'livre',
         currentTicketId: null,
         currentVehicleType: null,
         updatedAt: finalizedAt,
       });
     }
-    await updateDoc(tenantDoc(db, profile?.tenantId, 'cashRegisters', openCashRegister.id), {
+    await updateDoc(doc(db, 'cashRegisters', openCashRegister.id), {
       revenueByTickets: (openCashRegister.revenueByTickets || 0) + preview.total,
     });
     const finalTicket = { ...preview.ticket, ...finalizedData };

@@ -4,7 +4,6 @@ export type TicketStatus = 'ativo' | 'finalizado';
 export type CashStatus = 'aberto' | 'fechado';
 export type PaymentMethod = 'dinheiro' | 'pix' | 'cartao' | 'mensalista';
 export type PrinterWidth = '80mm' | '58mm';
-export type PrintMethod = 'browser' | 'rawbt';
 
 export interface AppUser {
   id: string;
@@ -16,9 +15,7 @@ export interface AppUser {
   jobTitle?: string;
   photoUrl?: string;
   createdAt?: string;
-  tenantId?: string;
 }
-
 
 export interface PriceSetting {
   id?: string;
@@ -104,9 +101,7 @@ export interface MonthlyCustomer {
   lastPaymentDate?: string;
   active: boolean;
   createdAt?: string;
-  tenantId?: string;
 }
-
 
 export interface EstablishmentSettings {
   id?: string;
@@ -119,5 +114,4 @@ export interface EstablishmentSettings {
   active?: boolean;
   ticketFooter?: string;
   printerWidth?: PrinterWidth;
-  printMethod?: PrintMethod;
 }

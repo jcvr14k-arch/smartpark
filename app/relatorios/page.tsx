@@ -1,15 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { getDoc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot } from 'firebase/firestore';
 import { Download, FileText, MessageCircleMore, Printer, Search } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import PageHeader from '@/components/PageHeader';
 import RoleGuard from '@/components/RoleGuard';
 import StatCard from '@/components/StatCard';
 import { db } from '@/lib/firebase';
-import { tenantCollection, tenantDoc } from '@/lib/tenant';
-import { useAuth } from '@/contexts/AuthContext';
 import { openPrintPage } from '@/lib/print';
 import { EstablishmentSettings, ParkingTicket, PaymentMethod } from '@/types';
 import { money, shortDateTime } from '@/utils/format';
@@ -18,7 +16,6 @@ import { buildReceiptWhatsappUrl } from '@/utils/whatsapp';
 const PAGE_SIZE = 10;
 
 export default function RelatoriosPage() {
-  const { profile } = useAuth();
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [search, setSearch] = useState('');
@@ -28,16 +25,16 @@ export default function RelatoriosPage() {
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    const unsub = onSnapshot(tenantCollection(db, profile?.tenantId, 'parkingTickets'), (snap) => {
+    const unsub = onSnapshot(collection(db, 'parkingTickets'), (snap) => {
       setTickets(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ParkingTicket, 'id'>) })));
     });
 
-    getDoc(tenantDoc(db, profile?.tenantId, 'settings', 'establishment')).then((snap) => {
+    getDoc(doc(db, 'settings', 'establishment')).then((snap) => {
       if (snap.exists()) setSettings(snap.data() as EstablishmentSettings);
     });
 
     return () => unsub();
-  }, [profile?.tenantId]);
+  }, []);
 
   const filtered = useMemo(() => {
     return tickets

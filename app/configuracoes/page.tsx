@@ -1,21 +1,17 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { MessageCircle } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 import { db } from '@/lib/firebase';
-import { tenantDoc } from '@/lib/tenant';
-import { useAuth } from '@/contexts/AuthContext';
 import { EstablishmentSettings } from '@/types';
 
 const supportUrl = `https://api.whatsapp.com/send/?phone=5533999675619&text=${encodeURIComponent('Olá! Preciso de suporte no sistema SmartPark.')}`;
 
 type PrinterWidth = '80mm' | '58mm';
-type PrintMethod = 'browser' | 'rawbt';
 
 export default function ConfiguracoesPage() {
-  const { profile } = useAuth();
   const [settings, setSettings] = useState<EstablishmentSettings>({
     name: 'SmartPark',
     active: true,
@@ -24,44 +20,28 @@ export default function ConfiguracoesPage() {
     address: '',
     document: '',
     printerWidth: '80mm',
-    printMethod: 'browser',
   });
   const [message, setMessage] = useState('');
 
   useEffect(() => {
     async function load() {
-      const ref = tenantDoc(db, profile?.tenantId, 'settings', 'establishment');
+      const ref = doc(db, 'settings', 'establishment');
       const snap = await getDoc(ref);
       if (snap.exists()) {
-        const loadedSettings = {
-          ...settings,
+        setSettings((prev) => ({
+          ...prev,
           ...(snap.data() as EstablishmentSettings),
           printerWidth:
             (snap.data() as EstablishmentSettings).printerWidth || '80mm',
-          printMethod:
-            (snap.data() as EstablishmentSettings).printMethod || 'browser',
-        };
-
-        setSettings(loadedSettings);
-
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem('smartpark:printerWidth', loadedSettings.printerWidth || '80mm');
-          window.localStorage.setItem('smartpark:printMethod', loadedSettings.printMethod || 'browser');
-        }
+        }));
       }
     }
     load();
-  }, [profile?.tenantId]);
+  }, []);
 
   async function saveSettings(event: FormEvent) {
     event.preventDefault();
-    await setDoc(tenantDoc(db, profile?.tenantId, 'settings', 'establishment'), settings, { merge: true });
-
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('smartpark:printerWidth', settings.printerWidth || '80mm');
-      window.localStorage.setItem('smartpark:printMethod', settings.printMethod || 'browser');
-    }
-
+    await setDoc(doc(db, 'settings', 'establishment'), settings, { merge: true });
     setMessage('Configurações salvas com sucesso.');
   }
 
@@ -155,28 +135,6 @@ export default function ConfiguracoesPage() {
               <option value="80mm">80mm</option>
               <option value="58mm">58mm</option>
             </select>
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Método de Impressão
-            </label>
-            <select
-              className="app-input"
-              value={settings.printMethod || 'browser'}
-              onChange={(e) =>
-                setSettings({
-                  ...settings,
-                  printMethod: e.target.value as PrintMethod,
-                })
-              }
-            >
-              <option value="browser">Navegador Padrão</option>
-              <option value="rawbt">Android / RAWBT</option>
-            </select>
-            <p className="mt-2 text-xs text-slate-500">
-              Use RAWBT em celulares Android com impressora térmica Bluetooth.
-            </p>
           </div>
 
           <div className="md:col-span-2">
