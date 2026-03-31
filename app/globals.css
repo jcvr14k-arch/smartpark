@@ -20,6 +20,16 @@ body {
   color: #0f172a;
 }
 
+/* Print routes: reset globals so ticket CSS has full control.
+   .print-route-active is added by each print page on mount. */
+html.print-route-active,
+body.print-route-active {
+  min-height: 0 !important;
+  height: auto !important;
+  background: #fff !important;
+  overflow-x: hidden !important;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }

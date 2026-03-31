@@ -28,6 +28,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
     }
   }, [isPrintRoute, loading, pathname, profile, router]);
 
+  // Print routes must render immediately — never show the auth loader or shell.
+  // On Android the same tab is reused, so the auth context may still be
+  // "loading" when the print page mounts for the second time.
+  if (isPrintRoute) return <>{children}</>;
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
@@ -37,7 +42,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }
 
   if (pathname === '/login') return <>{children}</>;
-  if (isPrintRoute) return <>{children}</>;
 
   return (
     <div className="app-shell bg-app">
