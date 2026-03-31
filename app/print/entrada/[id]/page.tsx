@@ -27,7 +27,6 @@ export default function PrintEntradaPage({ params }: { params: { id: string } })
   const returnTo = searchParams.get('returnTo');
   const [ticket, setTicket] = useState<ParkingTicket | null>(null);
   const [settings, setSettings] = useState<EstablishmentSettings | null>(null);
-  const [readyToPrint, setReadyToPrint] = useState(false);
   const [qr, setQr] = useState('');
   const [readyToPrint, setReadyToPrint] = useState(false);
 
