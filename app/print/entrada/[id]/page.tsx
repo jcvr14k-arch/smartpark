@@ -188,7 +188,8 @@ export default function PrintEntradaPage({ params }: { params: { id: string } })
   }
 
   return (
-    <div className="print-ticket-page">
+    <>
+      <div className="print-ticket-page">
         <div className="print-ticket">
           <div className="ticket-header">
             <div className="ticket-company">{settings?.name || 'SmartPark'}</div>
@@ -256,7 +257,7 @@ export default function PrintEntradaPage({ params }: { params: { id: string } })
         </div>
       </div>
 
-      <style jsx global>{`
+      <style>{`
         html.print-route-active,
         body.print-route-active {
           background: #fff !important;

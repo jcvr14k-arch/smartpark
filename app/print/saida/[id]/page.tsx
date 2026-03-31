@@ -167,7 +167,8 @@ export default function PrintSaidaPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="print-ticket-page">
+    <>
+      <div className="print-ticket-page">
         <div className="print-ticket">
           <div className="ticket-header">
             <div className="ticket-company">{settings?.name || 'SmartPark'}</div>
@@ -246,11 +247,10 @@ export default function PrintSaidaPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-<style>{`
-  html.print-route-active,
-  body.print-route-active {
-    background: #fff !important;
-
+      <style>{`
+        html.print-route-active,
+        body.print-route-active {
+          background: #fff !important;
           margin: 0 !important;
           padding: 0 !important;
           min-height: auto !important;
