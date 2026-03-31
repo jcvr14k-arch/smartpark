@@ -47,24 +47,22 @@ export default function Sidebar() {
   }, [pathname]);
 
   useEffect(() => {
-    if (!open) return;
+    if (typeof document === 'undefined') return;
 
-    const scrollY = window.scrollY;
     const body = document.body;
     const html = document.documentElement;
 
-    body.dataset.sidebarScrollY = String(scrollY);
-    body.classList.add('sidebar-open');
-    html.classList.add('sidebar-open');
-    body.style.top = `-${scrollY}px`;
+    if (open) {
+      body.classList.add('mobile-sidebar-open');
+      html.classList.add('mobile-sidebar-open');
+    } else {
+      body.classList.remove('mobile-sidebar-open');
+      html.classList.remove('mobile-sidebar-open');
+    }
 
     return () => {
-      const savedScrollY = Number(body.dataset.sidebarScrollY || scrollY || 0);
-      body.classList.remove('sidebar-open');
-      html.classList.remove('sidebar-open');
-      body.style.top = '';
-      delete body.dataset.sidebarScrollY;
-      window.scrollTo(0, savedScrollY);
+      body.classList.remove('mobile-sidebar-open');
+      html.classList.remove('mobile-sidebar-open');
     };
   }, [open]);
 
@@ -96,14 +94,15 @@ export default function Sidebar() {
       ) : null}
 
       {open ? (
-        <div className="mobile-sidebar-root fixed inset-0 z-[70] lg:hidden" aria-modal="true" role="dialog">
-          <div
-            className="mobile-sidebar-backdrop absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]"
-            aria-hidden="true"
+        <div className="mobile-sidebar-root fixed inset-0 z-[90] lg:hidden">
+          <button
+            type="button"
+            className="mobile-sidebar-backdrop absolute inset-0 bg-slate-950/45 backdrop-blur-[2px] touch-none"
+            aria-label="Fechar menu"
             onClick={() => setOpen(false)}
           />
 
-          <aside className="mobile-sidebar-panel absolute inset-y-0 left-0 flex w-[86vw] max-w-[320px] flex-col overflow-hidden border-r border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
+          <aside className="mobile-sidebar-panel absolute inset-y-0 left-0 z-[91] flex w-[86vw] max-w-[320px] flex-col overflow-hidden border-r border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 pb-4 pt-[max(16px,env(safe-area-inset-top))]">
               <div className="flex min-w-0 items-center gap-3">
                 <Image src="/icon-smartpark.svg" alt="SmartPark" width={42} height={42} priority />

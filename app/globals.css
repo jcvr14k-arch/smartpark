@@ -528,29 +528,31 @@ textarea {
 }
 
 
-html.sidebar-open,
-body.sidebar-open {
+html.mobile-sidebar-open,
+body.mobile-sidebar-open {
   overflow: hidden;
   overscroll-behavior: none;
+  touch-action: none;
 }
 
-body.sidebar-open {
-  position: fixed;
-  left: 0;
-  right: 0;
-  width: 100%;
+body.mobile-sidebar-open .app-main-area,
+body.mobile-sidebar-open .app-footer,
+body.mobile-sidebar-open .app-content {
+  pointer-events: none;
+  user-select: none;
+}
+
+body.mobile-sidebar-open .mobile-sidebar-root,
+body.mobile-sidebar-open .mobile-sidebar-root *,
+body.mobile-sidebar-open .mobile-sidebar-backdrop,
+body.mobile-sidebar-open .mobile-sidebar-panel {
+  pointer-events: auto;
 }
 
 .mobile-sidebar-root {
   touch-action: none;
 }
 
-.mobile-sidebar-backdrop {
-  pointer-events: auto;
-  touch-action: none;
-}
-
 .mobile-sidebar-panel {
-  pointer-events: auto;
   touch-action: pan-y;
 }
