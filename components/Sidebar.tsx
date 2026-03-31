@@ -3,26 +3,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-  BarChart3,
-  Car,
-  CreditCard,
-  LayoutDashboard,
-  LogOut,
-  Menu,
-  Settings,
-  ShieldCheck,
-  Tags,
-  Users,
-  Wallet,
-  Warehouse,
-  X,
-} from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { BarChart3, Car, CreditCard, LayoutDashboard, LogOut, Menu, Settings, ShieldCheck, Tags, Users, Wallet, Warehouse, X } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserRole } from '@/types';
+import type { UserRole } from '@/types';
 
-const menu: { href: string; label: string; icon: any; roles: UserRole[] }[] = [
+const menu: Array<{ href: string; label: string; icon: LucideIcon; roles: UserRole[] }> = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'vendedor'] },
   { href: '/entrada', label: 'Entrada', icon: Car, roles: ['admin', 'vendedor'] },
   { href: '/saida', label: 'Saída', icon: CreditCard, roles: ['admin', 'vendedor'] },
@@ -41,66 +28,25 @@ export default function Sidebar() {
   const { profile, logout } = useAuth();
   const [open, setOpen] = useState(false);
 
-  const allowedMenu = useMemo(
-    () => menu.filter((item) => (profile ? item.roles.includes(profile.role) : false)),
-    [profile]
-  );
+  useEffect(() => { setOpen(false); }, [pathname]);
 
+  const allowedMenu = useMemo(() => menu.filter((item) => (profile ? item.roles.includes(profile.role) : false)), [profile]);
   if (!profile) return null;
-
   const roleLabel = profile.role === 'admin' ? 'Administrador' : 'Vendedor';
+  async function handleLogout() { await logout(); router.replace('/login'); }
 
-  async function handleLogout() {
-    await logout();
-    router.replace('/login');
-  }
-
-  return (
-    <>
-      <button className="primary-outline fixed right-4 top-4 z-50 lg:hidden" type="button" onClick={() => setOpen((v) => !v)}>
-        {open ? <X size={18} /> : <Menu size={18} />}
-      </button>
-
-      <aside className={`sidebar-shell ${open ? 'fixed inset-y-4 left-4 right-4 z-40 block' : 'hidden'} lg:sticky lg:top-6 lg:block`}>
-        <div>
-          <div className="mb-8 flex items-center gap-3 px-2">
-            <Image src="/icon-smartpark.svg" alt="SmartPark" width={48} height={48} priority />
-            <div className="min-w-0">
-              <div className="truncate text-[24px] font-bold leading-none text-slate-950">SmartPark</div>
-              <div className="truncate pt-1 text-xs font-medium text-slate-500">Seu Estacionamento Inteligente</div>
-            </div>
-          </div>
-
-          <nav className="space-y-1.5">
-            {allowedMenu.map((item) => {
-              const active = pathname === item.href;
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`}
-                >
-                  <Icon size={18} />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
+  return (<>
+    <button className="primary-outline mobile-safe-top fixed right-3 top-3 z-50 lg:hidden" type="button" aria-label={open ? 'Fechar menu' : 'Abrir menu'} onClick={() => setOpen((v) => !v)}>{open ? <X size={18} /> : <Menu size={18} />}</button>
+    {open ? <button type="button" className="fixed inset-0 z-30 bg-slate-950/30 backdrop-blur-[2px] lg:hidden" aria-label="Fechar menu" onClick={() => setOpen(false)} /> : null}
+    <aside className={`sidebar-shell mobile-safe-bottom ${open ? 'fixed inset-x-3 top-3 bottom-3 z-40 flex flex-col overflow-y-auto' : 'hidden'} lg:sticky lg:top-6 lg:flex lg:h-fit lg:max-h-[calc(100vh-48px)] lg:flex-col lg:overflow-hidden`}>
+      <div className="min-h-0 flex-1">
+        <div className="mb-8 flex items-center gap-3 px-2">
+          <Image src="/icon-smartpark.svg" alt="SmartPark" width={48} height={48} priority />
+          <div className="min-w-0"><div className="truncate text-[24px] font-bold leading-none text-slate-950">SmartPark</div><div className="truncate pt-1 text-xs font-medium text-slate-500">Seu Estacionamento Inteligente</div></div>
         </div>
-
-        <div className="mt-8 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-          <div className="space-y-1">
-            <div className="text-base font-semibold text-slate-950">{profile.name}</div>
-            <div className="break-all text-xs text-slate-500">{profile.email}</div>
-            <div className="pt-2"><span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">{roleLabel}</span></div>
-          </div>
-          <button className="secondary-button mt-4 w-full justify-center" type="button" onClick={handleLogout}>
-            <LogOut size={16} />Sair
-          </button>
-        </div>
-      </aside>
-    </>
-  );
+        <nav className="space-y-1.5 overflow-y-auto pr-1">{allowedMenu.map((item) => { const active = pathname === item.href; const Icon = item.icon; return <Link key={item.href} href={item.href} onClick={() => setOpen(false)} className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`}><Icon size={18} /><span>{item.label}</span></Link>; })}</nav>
+      </div>
+      <div className="mt-6 rounded-[24px] border border-slate-200 bg-slate-50 p-4"><div className="space-y-1"><div className="text-base font-semibold text-slate-950">{profile.name}</div><div className="break-all text-xs text-slate-500">{profile.email}</div><div className="pt-2"><span className="inline-flex rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">{roleLabel}</span></div></div><button className="secondary-button mt-4 w-full justify-center" type="button" onClick={handleLogout}><LogOut size={16} />Sair</button></div>
+    </aside>
+  </>);
 }
