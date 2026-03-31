@@ -157,7 +157,6 @@ export default function PrintEntradaPage({ params }: { params: { id: string } })
   if (!ticket) {
     return (
       <>
-        {printMode === 'rawbt' ? <RawbtToolbar onPrint={handlePrintClick} onShare={handleShareClick} canShare={canShare} /> : null}
         <div className="print-ticket-page">
         <div className="print-loading">Preparando cupom...</div>
       </div>
@@ -167,7 +166,6 @@ export default function PrintEntradaPage({ params }: { params: { id: string } })
 
   return (
     <>
-      {printMode === 'rawbt' ? <RawbtToolbar onPrint={handlePrintClick} onShare={handleShareClick} canShare={canShare} /> : null}
       <div className="print-ticket-page">
         <div className="print-ticket">
           <div className="ticket-header">
