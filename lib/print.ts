@@ -23,16 +23,12 @@ export function openPrintPage(path: string) {
   if (useRawBtFlow) {
     url.searchParams.set('printMode', 'rawbt');
     url.searchParams.set('autoPrint', '1');
-    url.searchParams.set('returnTo', `${window.location.pathname}${window.location.search}`);
-  }
-
-  const finalPath = `${url.pathname}${url.search}${url.hash}`;
-
-  if (useRawBtFlow) {
-    window.location.assign(finalPath);
+    url.searchParams.set('returnTo', `${window.location.pathname}${window.location.search}${window.location.hash}`);
+    window.location.assign(`${url.pathname}${url.search}${url.hash}`);
     return;
   }
 
+  const finalPath = `${url.pathname}${url.search}${url.hash}`;
   const popup = window.open(
     finalPath,
     'smartpark-print-popup',

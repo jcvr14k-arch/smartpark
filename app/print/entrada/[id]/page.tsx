@@ -2,7 +2,7 @@
 
 import { getDoc } from 'firebase/firestore';
 import QRCode from 'qrcode';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { tenantDoc } from '@/lib/tenant';
@@ -13,46 +13,24 @@ const vehicleLabel = (type: ParkingTicket['vehicleType']) =>
   type === 'CAMINHAO'
     ? 'Caminhão'
     : type === 'CAMINHONETE'
-    ? 'Caminhonete'
-    : type === 'MOTO'
-    ? 'Moto'
-    : 'Carro';
-
-
-
-const waitForPaint = () =>
-  new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-  });
-
-async function waitForImages() {
-  const images = Array.from(document.images || []).filter((img) => !img.complete);
-  await Promise.all(
-    images.map(
-      (img) =>
-        new Promise<void>((resolve) => {
-          img.addEventListener('load', () => resolve(), { once: true });
-          img.addEventListener('error', () => resolve(), { once: true });
-        })
-    )
-  );
-}
-
-function resolveReturnPath(returnTo: string | null) {
-  return returnTo && returnTo.startsWith('/') ? returnTo : '/';
-}
-
+      ? 'Caminhonete'
+      : type === 'MOTO'
+        ? 'Moto'
+        : 'Carro';
 
 export default function PrintEntradaPage({ params }: { params: { id: string } }) {
   const searchParams = useSearchParams();
   const tenantId = searchParams.get('tenant');
+  const printMode = searchParams.get('printMode');
   const autoPrint = searchParams.get('autoPrint') !== '0';
   const returnTo = searchParams.get('returnTo');
   const [ticket, setTicket] = useState<ParkingTicket | null>(null);
   const [settings, setSettings] = useState<EstablishmentSettings | null>(null);
   const [qr, setQr] = useState('');
-  const [readyToPrint, setReadyToPrint] = useState(false);
-
+  const [loaded, setLoaded] = useState(false);
+  const startedRef = useRef(false);
+  const blurredRef = useRef(false);
+  const finishedRef = useRef(false);
 
   useEffect(() => {
     async function load() {
@@ -61,130 +39,104 @@ export default function PrintEntradaPage({ params }: { params: { id: string } })
         getDoc(tenantDoc(db, tenantId, 'settings', 'establishment')),
       ]);
 
+      let nextTicket: ParkingTicket | null = null;
+      let nextSettings: EstablishmentSettings | null = null;
+
       if (ticketSnap.exists()) {
-        const data = {
+        nextTicket = {
           id: ticketSnap.id,
           ...(ticketSnap.data() as Omit<ParkingTicket, 'id'>),
         };
-        setTicket(data);
-
-        const width = settingsSnap.exists() && (settingsSnap.data() as EstablishmentSettings).printerWidth === '58mm'
-          ? 160
-          : 220;
-
-        const qrUrl = await QRCode.toDataURL(
-          JSON.stringify({
-            ticketId: data.id,
-            shortTicket: data.shortTicket,
-            plate: data.plate || '',
-          }),
-          { width, margin: 1 }
-        );
-
-        setQr(qrUrl);
+        setTicket(nextTicket);
       }
 
       if (settingsSnap.exists()) {
-        setSettings(settingsSnap.data() as EstablishmentSettings);
+        nextSettings = settingsSnap.data() as EstablishmentSettings;
+        setSettings(nextSettings);
       }
 
+      if (nextTicket) {
+        const width = nextSettings?.printerWidth === '58mm' ? 160 : 220;
+        const qrUrl = await QRCode.toDataURL(
+          JSON.stringify({ ticketId: nextTicket.id, shortTicket: nextTicket.shortTicket, plate: nextTicket.plate || '' }),
+          { width, margin: 1 }
+        );
+        setQr(qrUrl);
+      }
+
+      setLoaded(true);
     }
 
     load();
   }, [params.id, tenantId]);
 
   useEffect(() => {
-    document.body.classList.add('print-route-active');
     document.documentElement.classList.add('print-route-active');
-
+    document.body.classList.add('print-route-active');
     return () => {
-      document.body.classList.remove('print-route-active');
       document.documentElement.classList.remove('print-route-active');
+      document.body.classList.remove('print-route-active');
     };
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
+    if (!autoPrint || !loaded || !ticket || startedRef.current) return;
 
-    async function prepare() {
-      const hasData = Boolean(ticket && settings) && Boolean(qr);
-      if (!hasData) return;
+    const finish = () => {
+      if (finishedRef.current) return;
+      finishedRef.current = true;
+      if (printMode === 'rawbt') {
+        if (returnTo) window.location.replace(returnTo);
+        else window.history.back();
+        return;
+      }
+      window.close();
+    };
 
-      await waitForPaint();
-      await waitForImages();
-      await waitForPaint();
+    const handleAfterPrint = () => finish();
+    const handleBlur = () => { blurredRef.current = true; };
+    const handleFocus = () => {
+      if (printMode === 'rawbt' && startedRef.current && blurredRef.current) window.setTimeout(finish, 250);
+    };
 
-      if (cancelled) return;
-      setReadyToPrint(true);
-    }
+    window.addEventListener('afterprint', handleAfterPrint);
+    window.addEventListener('blur', handleBlur);
+    window.addEventListener('focus', handleFocus);
 
-    prepare();
+    const raf1 = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.setTimeout(() => {
+          startedRef.current = true;
+          window.print();
+        }, 250);
+      });
+    });
 
     return () => {
-      cancelled = true;
+      window.cancelAnimationFrame(raf1);
+      window.removeEventListener('afterprint', handleAfterPrint);
+      window.removeEventListener('blur', handleBlur);
+      window.removeEventListener('focus', handleFocus);
     };
-  }, [ticket, settings, qr]);
-
-  useEffect(() => {
-    if (!autoPrint || !readyToPrint) return;
-
-    const target = resolveReturnPath(returnTo);
-    let finished = false;
-
-    const complete = () => {
-      if (finished) return;
-      finished = true;
-      window.location.replace(target);
-    };
-
-    const onAfterPrint = () => {
-      window.removeEventListener('afterprint', onAfterPrint);
-      setTimeout(complete, 180);
-    };
-
-    window.addEventListener('afterprint', onAfterPrint);
-
-    const printTimer = window.setTimeout(() => {
-      window.print();
-    }, 650);
-
-    const fallbackTimer = window.setTimeout(() => {
-      complete();
-    }, 6000);
-
-    return () => {
-      window.clearTimeout(printTimer);
-      window.clearTimeout(fallbackTimer);
-      window.removeEventListener('afterprint', onAfterPrint);
-    };
-  }, [autoPrint, readyToPrint, returnTo]);
+  }, [autoPrint, loaded, printMode, returnTo, ticket]);
 
   const is58 = (settings?.printerWidth || '80mm') === '58mm';
+  const styles = useMemo(() => ({
+    pageWidth: is58 ? '58mm' : '80mm',
+    padding: is58 ? '1.4mm 1.15mm 1.5mm' : '4mm 3.5mm 3mm',
+    companyFont: is58 ? '3.45mm' : '5.6mm',
+    companySub: is58 ? '1.85mm' : '2.9mm',
+    metaFont: is58 ? '1.72mm' : '2.8mm',
+    labelTop: is58 ? '2.2mm' : '3.8mm',
+    codeFont: is58 ? '7.1mm' : '12mm',
+    rowFont: is58 ? '2.32mm' : '4.3mm',
+    footerFont: is58 ? '1.68mm' : '2.6mm',
+    qrSize: is58 ? '20mm' : '31mm',
+    cutHeight: is58 ? '6mm' : '14mm',
+  }), [is58]);
 
-  const styles = useMemo(
-    () => ({
-      pageWidth: is58 ? '58mm' : '80mm',
-      padding: is58 ? '1.4mm 1.15mm 1.5mm' : '4mm 3.5mm 3mm',
-      companyFont: is58 ? '3.45mm' : '5.6mm',
-      companySub: is58 ? '1.85mm' : '2.9mm',
-      metaFont: is58 ? '1.72mm' : '2.8mm',
-      labelTop: is58 ? '2.2mm' : '3.8mm',
-      codeFont: is58 ? '7.1mm' : '12mm',
-      subtitle: is58 ? '2.75mm' : '4.3mm',
-      rowFont: is58 ? '2.32mm' : '4.3mm',
-      footerFont: is58 ? '1.68mm' : '2.6mm',
-      qrSize: is58 ? '20mm' : '31mm',
-      cutHeight: is58 ? '6mm' : '14mm',
-    }),
-    [is58]
-  );
-
-  if (!ticket || !settings || !readyToPrint) {
-    return (
-      <div className="print-ticket-page">
-        <div className="print-loading">Preparando cupom...</div>
-      </div>
-    );
+  if (!ticket || !loaded) {
+    return <><div className="print-ticket-page"><div className="print-ticket print-ticket-loading">Preparando cupom...</div></div><style>{basePrintStyles(styles, is58)}</style></>;
   }
 
   return (
@@ -193,348 +145,35 @@ export default function PrintEntradaPage({ params }: { params: { id: string } })
         <div className="print-ticket">
           <div className="ticket-header">
             <div className="ticket-company">{settings?.name || 'SmartPark'}</div>
-
-            {settings?.address ? (
-              <div className="ticket-company-sub">{settings.address}</div>
-            ) : null}
-
-            {settings?.phone || settings?.document ? (
-              <div className="ticket-company-meta">
-                {settings?.phone ? <span>Tel: {settings.phone}</span> : null}
-                {settings?.document ? <span>CNPJ: {settings.document}</span> : null}
-              </div>
-            ) : null}
+            {settings?.address ? <div className="ticket-company-sub">{settings.address}</div> : null}
+            {settings?.phone || settings?.document ? <div className="ticket-company-meta">{settings?.phone ? <span>Tel: {settings.phone}</span> : null}{settings?.document ? <span>CNPJ: {settings.document}</span> : null}</div> : null}
           </div>
-
           <div className="ticket-dashed" />
-
           <div className="ticket-label-top">CÓDIGO DO TICKET</div>
           <div className="ticket-code">{ticket.shortTicket}</div>
-
-          <div className="ticket-qr-wrap">
-            {qr ? <img src={qr} alt="QR Code" className="ticket-qr" /> : null}
-          </div>
-
+          <div className="ticket-qr-wrap">{qr ? <img src={qr} alt="QR Code" className="ticket-qr" /> : null}</div>
           <div className="ticket-dashed" />
-
-          <div className="ticket-row">
-            <span className="ticket-row-label">Entrada:</span>
-            <span className="ticket-row-value">
-              {shortDate(ticket.entryAt)}, {shortTime(ticket.entryAt)}
-            </span>
-          </div>
-
-          <div className="ticket-row">
-            <span className="ticket-row-label">Veículo:</span>
-            <span className="ticket-row-value">{vehicleLabel(ticket.vehicleType)}</span>
-          </div>
-
-          <div className="ticket-row">
-            <span className="ticket-row-label">Placa:</span>
-            <span className="ticket-row-value">{ticket.plate || '-'}</span>
-          </div>
-
-          <div className="ticket-row">
-            <span className="ticket-row-label">Vaga:</span>
-            <span className="ticket-row-value">{ticket.parkingSpaceCode || '-'}</span>
-          </div>
-
-          <div className="ticket-row">
-            <span className="ticket-row-label">Operador:</span>
-            <span className="ticket-row-value">
-              {ticket.entryOperatorName || ticket.cashierName || '-'}
-            </span>
-          </div>
-
+          <div className="ticket-row"><span className="ticket-row-label">Entrada:</span><span className="ticket-row-value">{shortDate(ticket.entryAt)}, {shortTime(ticket.entryAt)}</span></div>
+          <div className="ticket-row"><span className="ticket-row-label">Veículo:</span><span className="ticket-row-value">{vehicleLabel(ticket.vehicleType)}</span></div>
+          <div className="ticket-row"><span className="ticket-row-label">Placa:</span><span className="ticket-row-value">{ticket.plate || '-'}</span></div>
+          <div className="ticket-row"><span className="ticket-row-label">Vaga:</span><span className="ticket-row-value">{ticket.parkingSpaceCode || '-'}</span></div>
+          <div className="ticket-row"><span className="ticket-row-label">Operador:</span><span className="ticket-row-value">{ticket.entryOperatorName || ticket.cashierName || '-'}</span></div>
           <div className="ticket-dashed" />
-
-          <div className="ticket-footer">
-            <p>{settings?.ticketFooter || 'Nao nos responsabilizamos por objetos deixados no veiculo.'}</p>
-            <p>Perda do ticket: taxa adicional sera cobrada.</p>
-          </div>
-
+          <div className="ticket-footer"><p>{settings?.ticketFooter || 'Nao nos responsabilizamos por objetos deixados no veiculo.'}</p><p>Perda do ticket: taxa adicional sera cobrada.</p></div>
           <div className="cut-space" />
         </div>
       </div>
-
-      <style>{`
-        html.print-route-active,
-        body.print-route-active {
-          background: #fff !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          min-height: auto !important;
-          overflow: visible !important;
-        }
-
-        body.print-route-active > * {
-          background: #fff !important;
-        }
-
-        .print-loading {
-          width: ${styles.pageWidth};
-          margin: 0 auto;
-          padding: 12mm 4mm;
-          text-align: center;
-          color: #475569;
-          background: #fff;
-          font-family: Arial, Helvetica, sans-serif;
-        }
-
-        @page {
-          size: ${styles.pageWidth} auto;
-          margin: 0;
-        }
-
-        .print-ticket-page {
-          display: flex;
-          justify-content: center;
-          padding: 0;
-          background: #fff;
-          min-height: auto;
-          width: ${styles.pageWidth};
-          max-width: 100%;
-          margin: 0 auto;
-        }
-
-        .print-ticket {
-          width: ${styles.pageWidth};
-          background: #fff;
-          color: #111827;
-          padding: ${styles.padding};
-          box-sizing: border-box;
-          font-family: Arial, Helvetica, sans-serif;
-          box-shadow: none;
-        }
-
-        .ticket-header {
-          text-align: center;
-          margin-bottom: 2.2mm;
-        }
-
-        .ticket-company {
-          text-align: center;
-          font-size: ${styles.companyFont};
-          font-weight: 600;
-          line-height: 1.15;
-          margin-bottom: 1.2mm;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-
-        .ticket-company-sub {
-          font-size: ${styles.companySub};
-          font-weight: 500;
-          line-height: 1.25;
-          color: #000;
-          margin-bottom: 0.8mm;
-        }
-
-        .ticket-company-meta {
-          display: flex;
-          justify-content: center;
-          gap: 2.2mm;
-          flex-wrap: wrap;
-          font-size: ${styles.metaFont};
-          line-height: 1.2;
-          color: #000;
-          font-weight: 500;
-        }
-
-        .ticket-dashed {
-          border-top: 0.35mm dashed #94a3b8;
-          margin: 3mm 0;
-        }
-
-        .ticket-label-top {
-          text-align: center;
-          font-size: ${styles.labelTop};
-          color: #000;
-          font-weight: 500;
-          margin-bottom: 1.5mm;
-        }
-
-        .ticket-code {
-          text-align: center;
-          font-size: ${styles.codeFont};
-          font-weight: 600;
-          line-height: 1;
-          color: #000;
-          margin-bottom: 2.2mm;
-        }
-
-        .ticket-qr-wrap {
-          display: flex;
-          justify-content: center;
-          margin: 1mm 0 2.4mm;
-        }
-
-        .ticket-qr {
-          width: ${styles.qrSize};
-          height: ${styles.qrSize};
-          image-rendering: pixelated;
-        }
-
-        .ticket-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 2mm;
-          margin: 1.2mm 0;
-          font-size: ${styles.rowFont};
-          line-height: 1.35;
-        }
-
-        .ticket-row-label {
-          color: #000;
-          font-weight: 500;
-        }
-
-        .ticket-row-value {
-          color: #111827;
-          font-weight: 600;
-          text-align: right;
-        }
-
-        .ticket-footer {
-          text-align: center;
-          font-size: ${styles.footerFont};
-          line-height: 1.2;
-          color: #000;
-          font-weight: 500;
-          margin-top: 1.2mm;
-        }
-
-        .ticket-footer p {
-          margin: 0 0 0.6mm;
-        }
-
-        .cut-space {
-          height: ${styles.cutHeight};
-        }
-
-        .rawbt-toolbar {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          align-items: center;
-          padding: 10px 12px;
-          background: #e2e8f0;
-          border-bottom: 1px solid #cbd5e1;
-          font-family: Arial, Helvetica, sans-serif;
-        }
-
-        .rawbt-toolbar strong {
-          display: block;
-          color: #0f172a;
-          font-size: 14px;
-        }
-
-        .rawbt-toolbar p {
-          margin: 4px 0 0;
-          color: #475569;
-          font-size: 12px;
-        }
-
-        .rawbt-actions {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-          gap: 8px;
-        }
-
-        .rawbt-actions button {
-          appearance: none;
-          border: 0;
-          border-radius: 10px;
-          background: #0f172a;
-          color: #fff;
-          padding: 11px 14px;
-          font-size: 13px;
-          font-weight: 600;
-        }
-
-
-        .ticket-header,
-        .ticket-dashed,
-        .ticket-footer,
-        .ticket-row,
-        .ticket-qr-wrap {
-          width: 100%;
-          box-sizing: border-box;
-        }
-
-        .ticket-row-label {
-          flex: 0 0 auto;
-          max-width: 40%;
-        }
-
-        .ticket-row-value {
-          flex: 1 1 auto;
-          word-break: break-word;
-        }
-
-        @media (max-width: 640px) {
-          .print-ticket-page {
-            padding: 0;
-            background: #fff;
-          }
-
-          .print-ticket {
-            width: ${styles.pageWidth};
-            min-width: ${styles.pageWidth};
-            max-width: ${styles.pageWidth};
-            box-shadow: none;
-            margin: 0 auto;
-          }
-
-          .rawbt-toolbar {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-          }
-        }
-
-        @media print {
-          .rawbt-toolbar {
-            display: none;
-          }
-
-          @page {
-            size: ${styles.pageWidth} auto;
-            margin: 0;
-          }
-
-          html,
-          body {
-            width: ${styles.pageWidth};
-            margin: 0;
-            padding: 0;
-            background: #fff;
-          }
-
-          body {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-
-          .print-ticket-page {
-            display: block;
-            min-height: auto;
-            padding: 0;
-            background: #fff;
-          }
-
-          .print-ticket {
-            width: ${styles.pageWidth} !important;
-            min-width: ${styles.pageWidth};
-            max-width: ${styles.pageWidth};
-            box-shadow: none;
-            margin: 0;
-          }
-        }
-      `}</style>
+      <style>{basePrintStyles(styles, is58)}</style>
     </>
   );
 }
+
+function basePrintStyles(styles: Record<string, string>, is58: boolean) { return `
+  html.print-route-active, body.print-route-active { margin:0!important; padding:0!important; background:#fff!important; min-height:100%!important; height:auto!important; }
+  .print-ticket-page { display:flex; justify-content:center; padding:0; margin:0; background:#fff; min-height:auto; }
+  .print-ticket { width:${styles.pageWidth}; max-width:${styles.pageWidth}; background:#fff; color:#111827; padding:${styles.padding}; box-sizing:border-box; font-family:Arial,Helvetica,sans-serif; box-shadow:${is58 ? 'none' : '0 0 0 1px #e5e7eb, 0 8px 20px rgba(15, 23, 42, 0.08)'}; }
+  .print-ticket-loading { text-align:center; padding-top:10mm; padding-bottom:10mm; }
+  .ticket-header{text-align:center;margin-bottom:2.2mm;} .ticket-company{text-align:center;font-size:${styles.companyFont};font-weight:600;line-height:1.15;margin-bottom:1.2mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;} .ticket-company-sub{font-size:${styles.companySub};font-weight:500;line-height:1.25;color:#000;margin-bottom:0.8mm;} .ticket-company-meta{display:flex;justify-content:center;gap:2.2mm;flex-wrap:wrap;font-size:${styles.metaFont};line-height:1.2;color:#000;font-weight:500;} .ticket-dashed{border-top:0.35mm dashed #94a3b8;margin:3mm 0;} .ticket-label-top{text-align:center;font-size:${styles.labelTop};font-weight:700;letter-spacing:.2mm;margin-bottom:1.2mm;} .ticket-code{text-align:center;font-size:${styles.codeFont};font-weight:700;line-height:1;letter-spacing:${is58 ? '0.25mm' : '0.4mm'};margin-bottom:2mm;} .ticket-qr-wrap{display:flex;justify-content:center;margin:1mm 0 2mm;} .ticket-qr{width:${styles.qrSize};height:${styles.qrSize};image-rendering:pixelated;} .ticket-row{display:flex;justify-content:space-between;align-items:flex-start;gap:2mm;margin:1.2mm 0;font-size:${styles.rowFont};line-height:1.35;} .ticket-row-label{color:#000;font-weight:500;} .ticket-row-value{color:#111827;font-weight:600;text-align:right;} .ticket-footer{text-align:center;font-size:${styles.footerFont};line-height:1.2;color:#000;font-weight:500;margin-top:1.2mm;} .ticket-footer p{margin:0 0 .6mm;} .cut-space{height:${styles.cutHeight};}
+  @page { size:auto; margin:0; }
+  @media print { html,body{background:#fff!important;width:100%;} .print-ticket-page{display:block!important;min-height:0!important;} .print-ticket{margin:0 auto!important;box-shadow:none!important;break-inside:avoid;page-break-inside:avoid;} }
+`; }
