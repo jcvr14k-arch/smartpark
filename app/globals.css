@@ -26,7 +26,9 @@ html {
 
 body {
   font-family: Arial, Helvetica, sans-serif;
-  overscroll-behavior-y: contain;
+  overscroll-behavior: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y pinch-zoom;
 }
 
 a {
@@ -229,6 +231,35 @@ textarea {
   color: #94a3b8;
 }
 
+
+
+html {
+  overscroll-behavior: auto;
+  touch-action: pan-y pinch-zoom;
+}
+
+body.mobile-nav-open {
+  overflow: hidden;
+}
+
+@media (pointer: coarse) {
+  body,
+  .app-shell,
+  .app-shell-inner,
+  .app-main-area,
+  .app-content {
+    touch-action: pan-y pinch-zoom;
+  }
+
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+}
 @media (min-width: 1024px) {
   .app-shell {
     padding: 24px;
@@ -524,50 +555,5 @@ textarea {
 
   .app-main-area {
     min-height: calc(100vh - 48px);
-  }
-}
-
-
-.mobile-sidebar-open {
-  overflow: hidden;
-  touch-action: none;
-}
-
-.mobile-sidebar-root {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  pointer-events: none;
-}
-
-.mobile-sidebar-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-  pointer-events: auto;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.mobile-sidebar-panel {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  display: flex;
-  width: 86vw;
-  max-width: 320px;
-  flex-direction: column;
-  overflow: hidden;
-  border-right: 1px solid rgb(226 232 240);
-  background: #fff;
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
-  pointer-events: auto;
-  -webkit-overflow-scrolling: touch;
-  transform: translate3d(0,0,0);
-}
-
-@media (max-width: 1023px) {
-  a, button, input, select, textarea, summary, [role="button"], [role="tab"] {
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
   }
 }

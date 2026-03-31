@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   BarChart3,
   Car,
@@ -17,11 +17,11 @@ import {
   Wallet,
   Warehouse,
   X,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import type { UserRole } from "@/types";
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import type { UserRole } from '@/types';
 
 const menu: Array<{ href: string; label: string; icon: LucideIcon; roles: UserRole[] }> = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'vendedor'] },
@@ -47,18 +47,9 @@ export default function Sidebar() {
   }, [pathname]);
 
   useEffect(() => {
-    if (typeof document === "undefined") return;
-    const body = document.body;
-
-    if (open) {
-      body.classList.add("mobile-sidebar-open");
-    } else {
-      body.classList.remove("mobile-sidebar-open");
-    }
-
-    return () => {
-      body.classList.remove("mobile-sidebar-open");
-    };
+    if (typeof document === 'undefined') return;
+    document.body.classList.toggle('mobile-nav-open', open);
+    return () => document.body.classList.remove('mobile-nav-open');
   }, [open]);
 
   const allowedMenu = useMemo(
@@ -68,42 +59,37 @@ export default function Sidebar() {
 
   if (!profile) return null;
 
-  const roleLabel = profile.role === "admin" ? "Administrador" : "Vendedor";
+  const roleLabel = profile.role === 'admin' ? 'Administrador' : 'Vendedor';
 
   async function handleLogout() {
     await logout();
-    router.replace("/login");
+    router.replace('/login');
   }
 
   return (
     <>
-      {!open ? (
-        <button
-          className="primary-outline fixed left-4 top-[max(16px,env(safe-area-inset-top))] z-[70] lg:hidden"
-          type="button"
-          aria-label="Abrir menu"
-          onClick={() => setOpen(true)}
-        >
-          <Menu size={18} />
-        </button>
-      ) : null}
+      <button
+        className={`primary-outline fixed left-4 top-[max(16px,env(safe-area-inset-top))] z-[80] lg:hidden ${open ? 'pointer-events-none opacity-0' : ''}`}
+        type="button"
+        aria-label="Abrir menu"
+        onClick={() => setOpen(true)}
+      >
+        <Menu size={18} />
+      </button>
 
       {open ? (
-        <div className="mobile-sidebar-root lg:hidden">
+        <div className="fixed inset-0 z-[90] lg:hidden">
           <div
-            className="mobile-sidebar-overlay"
+            className="absolute inset-0 bg-slate-950/45"
             aria-hidden="true"
             onClick={() => setOpen(false)}
-            onTouchEnd={() => setOpen(false)}
           />
 
           <aside
-            className="mobile-sidebar-panel"
+            className="absolute inset-y-0 left-0 flex h-full w-[86vw] max-w-[320px] flex-col border-r border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
             role="dialog"
             aria-modal="true"
-            aria-label="Menu lateral"
-            onClick={(e) => e.stopPropagation()}
-            onTouchEnd={(e) => e.stopPropagation()}
+            aria-label="Menu de navegação"
           >
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 pb-4 pt-[max(16px,env(safe-area-inset-top))]">
               <div className="flex min-w-0 items-center gap-3">
@@ -136,7 +122,7 @@ export default function Sidebar() {
                       key={item.href}
                       href={item.href}
                       onClick={() => setOpen(false)}
-                      className={`sidebar-link ${active ? "sidebar-link-active" : ""}`}
+                      className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`}
                     >
                       <Icon size={18} />
                       <span>{item.label}</span>
@@ -187,7 +173,7 @@ export default function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`sidebar-link ${active ? "sidebar-link-active" : ""}`}
+                  className={`sidebar-link ${active ? 'sidebar-link-active' : ''}`}
                 >
                   <Icon size={18} />
                   <span>{item.label}</span>
