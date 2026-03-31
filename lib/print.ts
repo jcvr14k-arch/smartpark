@@ -22,14 +22,10 @@ export function openPrintPage(path: string) {
 
   if (useRawBtFlow) {
     url.searchParams.set('printMode', 'rawbt');
-  }
-
-  url.searchParams.set('autoPrint', '1');
-  if (!url.searchParams.get('returnTo')) {
-    url.searchParams.set(
-      'returnTo',
-      `${window.location.pathname}${window.location.search}${window.location.hash}` || '/'
-    );
+    url.searchParams.set('autoPrint', '1');
+    url.searchParams.set('returnTo', `${window.location.pathname}${window.location.search}${window.location.hash}`);
+    window.location.assign(`${url.pathname}${url.search}${url.hash}`);
+    return;
   }
 
   const finalPath = `${url.pathname}${url.search}${url.hash}`;
@@ -41,7 +37,7 @@ export function openPrintPage(path: string) {
   );
 
   if (!popup) {
-    window.location.assign(finalPath);
+    window.open(finalPath, '_blank', 'noopener,noreferrer');
     return;
   }
 

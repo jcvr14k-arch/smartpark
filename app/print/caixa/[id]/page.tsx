@@ -8,72 +8,32 @@ import { tenantDoc } from '@/lib/tenant';
 import { CashRegister, EstablishmentSettings } from '@/types';
 import { money, shortDateTime } from '@/utils/format';
 
-function startAutoPrint(returnTo: string) {
-  let finalized = false;
-  let sawHidden = false;
-
-  const finalize = () => {
-    if (finalized) return;
-    finalized = true;
-
-    try {
-      window.close();
-    } catch {}
-
-    window.setTimeout(() => {
-      try {
-        window.close();
-      } catch {}
-
-      if (typeof window !== 'undefined' && !window.closed) {
-        window.location.replace(returnTo || '/');
-      }
-    }, 180);
-  };
-
-  const handleAfterPrint = () => {
-    window.setTimeout(finalize, 120);
-  };
-
-  const handleVisibilityChange = () => {
-    if (document.visibilityState === 'hidden') {
-      sawHidden = true;
-      return;
-    }
-
-    if (sawHidden) {
-      window.setTimeout(finalize, 180);
-    }
-  };
-
-  const handleFocus = () => {
-    if (sawHidden) {
-      window.setTimeout(finalize, 180);
-    }
-  };
-
-  window.addEventListener('afterprint', handleAfterPrint);
-  document.addEventListener('visibilitychange', handleVisibilityChange);
-  window.addEventListener('focus', handleFocus);
-
-  window.setTimeout(() => {
-    window.print();
-  }, 350);
-
-  window.setTimeout(() => {
-    window.removeEventListener('afterprint', handleAfterPrint);
-    document.removeEventListener('visibilitychange', handleVisibilityChange);
-    window.removeEventListener('focus', handleFocus);
-  }, 60000);
-}
 
 export default function PrintCaixaPage({ params }: { params: { id: string } }) {
   const searchParams = useSearchParams();
   const tenantId = searchParams.get('tenant');
-  const returnTo = searchParams.get('returnTo') || '/';
+  const printMode = searchParams.get('printMode');
+  const returnTo = searchParams.get('returnTo');
   const autoPrint = searchParams.get('autoPrint') !== '0';
   const [cash, setCash] = useState<CashRegister | null>(null);
   const [settings, setSettings] = useState<EstablishmentSettings | null>(null);
+
+  function returnToSystem() {
+    if (typeof window === 'undefined') return;
+
+    if (returnTo) {
+      window.location.replace(returnTo);
+      return;
+    }
+
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+
+    window.location.replace('/');
+  }
+
 
 
   useEffect(() => {
@@ -92,12 +52,31 @@ export default function PrintCaixaPage({ params }: { params: { id: string } }) {
       }
 
       if (autoPrint) {
-        startAutoPrint(returnTo);
+        window.setTimeout(() => window.print(), 450);
+
+        const handleAfterPrint = () => {
+          window.removeEventListener('afterprint', handleAfterPrint);
+          window.setTimeout(() => {
+            returnToSystem();
+          }, 180);
+        };
+
+        window.addEventListener('afterprint', handleAfterPrint);
       }
     }
 
     load();
-  }, [autoPrint, params.id, returnTo, tenantId]);
+  }, [autoPrint, params.id, tenantId, returnTo]);
+
+  useEffect(() => {
+    if (!(printMode === 'rawbt' && autoPrint)) return;
+
+    const fallbackTimer = window.setTimeout(() => {
+      returnToSystem();
+    }, 9000);
+
+    return () => window.clearTimeout(fallbackTimer);
+  }, [autoPrint, printMode, returnTo]);
 
   const sangrias = useMemo(
     () => cash?.withdrawals?.reduce((sum, item) => sum + item.amount, 0) || 0,
@@ -127,9 +106,11 @@ export default function PrintCaixaPage({ params }: { params: { id: string } }) {
 
   if (!cash) {
     return (
-      <div className="print-ticket-page">
-        <div className="print-ticket">Carregando...</div>
+      <>
+        <div className="print-ticket-page">
+        <div className="print-ticket">{printMode === 'rawbt' ? 'Preparando impressão...' : 'Carregando...'}</div>
       </div>
+      </>
     );
   }
 
