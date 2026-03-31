@@ -46,6 +46,28 @@ export default function Sidebar() {
     setOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    const scrollY = window.scrollY;
+    const body = document.body;
+    const html = document.documentElement;
+
+    body.dataset.sidebarScrollY = String(scrollY);
+    body.classList.add('sidebar-open');
+    html.classList.add('sidebar-open');
+    body.style.top = `-${scrollY}px`;
+
+    return () => {
+      const savedScrollY = Number(body.dataset.sidebarScrollY || scrollY || 0);
+      body.classList.remove('sidebar-open');
+      html.classList.remove('sidebar-open');
+      body.style.top = '';
+      delete body.dataset.sidebarScrollY;
+      window.scrollTo(0, savedScrollY);
+    };
+  }, [open]);
+
   const allowedMenu = useMemo(
     () => menu.filter((item) => (profile ? item.roles.includes(profile.role) : false)),
     [profile]
@@ -74,15 +96,14 @@ export default function Sidebar() {
       ) : null}
 
       {open ? (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <button
-            type="button"
-            className="absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]"
-            aria-label="Fechar menu"
+        <div className="mobile-sidebar-root fixed inset-0 z-[70] lg:hidden" aria-modal="true" role="dialog">
+          <div
+            className="mobile-sidebar-backdrop absolute inset-0 bg-slate-950/45 backdrop-blur-[2px]"
+            aria-hidden="true"
             onClick={() => setOpen(false)}
           />
 
-          <aside className="absolute inset-y-0 left-0 flex w-[86vw] max-w-[320px] flex-col overflow-hidden border-r border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
+          <aside className="mobile-sidebar-panel absolute inset-y-0 left-0 flex w-[86vw] max-w-[320px] flex-col overflow-hidden border-r border-slate-200 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.18)]">
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 pb-4 pt-[max(16px,env(safe-area-inset-top))]">
               <div className="flex min-w-0 items-center gap-3">
                 <Image src="/icon-smartpark.svg" alt="SmartPark" width={42} height={42} priority />
