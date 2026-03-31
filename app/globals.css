@@ -528,31 +528,46 @@ textarea {
 }
 
 
-html.mobile-sidebar-open,
-body.mobile-sidebar-open {
+.mobile-sidebar-open {
   overflow: hidden;
-  overscroll-behavior: none;
   touch-action: none;
-}
-
-body.mobile-sidebar-open .app-main-area,
-body.mobile-sidebar-open .app-footer,
-body.mobile-sidebar-open .app-content {
-  pointer-events: none;
-  user-select: none;
-}
-
-body.mobile-sidebar-open .mobile-sidebar-root,
-body.mobile-sidebar-open .mobile-sidebar-root *,
-body.mobile-sidebar-open .mobile-sidebar-backdrop,
-body.mobile-sidebar-open .mobile-sidebar-panel {
-  pointer-events: auto;
 }
 
 .mobile-sidebar-root {
-  touch-action: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.mobile-sidebar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobile-sidebar-panel {
-  touch-action: pan-y;
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  display: flex;
+  width: 86vw;
+  max-width: 320px;
+  flex-direction: column;
+  overflow: hidden;
+  border-right: 1px solid rgb(226 232 240);
+  background: #fff;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+  pointer-events: auto;
+  -webkit-overflow-scrolling: touch;
+  transform: translate3d(0,0,0);
+}
+
+@media (max-width: 1023px) {
+  a, button, input, select, textarea, summary, [role="button"], [role="tab"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
 }
