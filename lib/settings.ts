@@ -1,9 +1,10 @@
-import { doc, getDoc } from 'firebase/firestore';
+import { getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { tenantDoc } from '@/lib/tenant';
 import { EstablishmentSettings } from '@/types';
 
-export async function getEstablishmentSettings(): Promise<EstablishmentSettings> {
-  const snap = await getDoc(doc(db, 'settings', 'establishment'));
+export async function getEstablishmentSettings(tenantId?: string | null): Promise<EstablishmentSettings> {
+  const snap = await getDoc(tenantDoc(db, tenantId, 'settings', 'establishment'));
   if (!snap.exists()) {
     return {
       name: 'Estacionamento',

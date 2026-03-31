@@ -17,13 +17,12 @@ import {
   Wallet,
   Warehouse,
   X,
-  type LucideIcon,
 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { UserRole } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
+import { UserRole } from '@/types';
 
-const menu = [
+const menu: { href: string; label: string; icon: any; roles: UserRole[] }[] = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin', 'vendedor'] },
   { href: '/entrada', label: 'Entrada', icon: Car, roles: ['admin', 'vendedor'] },
   { href: '/saida', label: 'Saída', icon: CreditCard, roles: ['admin', 'vendedor'] },
@@ -34,7 +33,7 @@ const menu = [
   { href: '/relatorios', label: 'Relatórios', icon: BarChart3, roles: ['admin'] },
   { href: '/usuarios', label: 'Usuários', icon: ShieldCheck, roles: ['admin'] },
   { href: '/configuracoes', label: 'Configurações', icon: Settings, roles: ['admin', 'vendedor'] },
-] satisfies Array<{ href: string; label: string; icon: LucideIcon; roles: UserRole[] }>;
+];
 
 export default function Sidebar() {
   const pathname = usePathname();

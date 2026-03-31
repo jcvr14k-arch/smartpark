@@ -3,8 +3,6 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import {
   addDoc,
-  collection,
-  doc,
   getDocs,
   onSnapshot,
   query,
@@ -15,6 +13,7 @@ import { BanknoteArrowUp, Plus, Wallet } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
+import { tenantCollection, tenantDoc } from '@/lib/tenant';
 import { openPrintPage } from '@/lib/print';
 import { CashRegister } from '@/types';
 import { money, shortDateTime, toInputNumber } from '@/utils/format';
@@ -36,7 +35,7 @@ export default function CaixaPage() {
     let unsubRows: (() => void) | null = null;
 
     if (profile?.role === 'admin') {
-      unsubRows = onSnapshot(collection(db, 'cashRegisters'), (snap) => {
+      unsubRows = onSnapshot(tenantCollection(db, profile?.tenantId, 'cashRegisters'), (snap) => {
         const items = snap.docs.map((d) => ({
           id: d.id,
           ...(d.data() as Omit<CashRegister, 'id'>),
@@ -56,7 +55,7 @@ export default function CaixaPage() {
 
     const unsubOpen = onSnapshot(
       query(
-        collection(db, 'cashRegisters'),
+        tenantCollection(db, profile?.tenantId, 'cashRegisters'),
         where('status', '==', 'aberto'),
         where('operatorId', '==', profile.id)
       ),
@@ -90,7 +89,7 @@ export default function CaixaPage() {
 
     const existingOpenCash = await getDocs(
       query(
-        collection(db, 'cashRegisters'),
+        tenantCollection(db, profile?.tenantId, 'cashRegisters'),
         where('status', '==', 'aberto'),
         where('operatorId', '==', profile.id)
       )
@@ -102,7 +101,7 @@ export default function CaixaPage() {
       return;
     }
 
-    await addDoc(collection(db, 'cashRegisters'), {
+    await addDoc(tenantCollection(db, profile?.tenantId, 'cashRegisters'), {
       operatorId: profile.id,
       operatorName: profile.name,
       openedAt: new Date().toISOString(),
@@ -122,7 +121,7 @@ export default function CaixaPage() {
     event.preventDefault();
     if (!openCash) return;
 
-    await updateDoc(doc(db, 'cashRegisters', openCash.id), {
+    await updateDoc(tenantDoc(db, profile?.tenantId, 'cashRegisters', openCash.id), {
       withdrawals: [
         ...(openCash.withdrawals || []),
         {
@@ -142,7 +141,7 @@ export default function CaixaPage() {
     if (!openCash) return;
 
     const closedAt = new Date().toISOString();
-    await updateDoc(doc(db, 'cashRegisters', openCash.id), {
+    await updateDoc(tenantDoc(db, profile?.tenantId, 'cashRegisters', openCash.id), {
       status: 'fechado',
       closedAt,
     });

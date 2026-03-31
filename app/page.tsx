@@ -8,6 +8,7 @@ import PageHeader from '@/components/PageHeader';
 import StatCard from '@/components/StatCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
+import { tenantCollection } from '@/lib/tenant';
 import { CashRegister, ParkingSpace, ParkingTicket } from '@/types';
 import { money, shortDateTime, todayRange } from '@/utils/format';
 
@@ -21,19 +22,19 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const { start, end } = todayRange();
-    const unsubActive = onSnapshot(query(collection(db, 'parkingTickets'), where('status', '==', 'ativo')), (snap) => {
+    const unsubActive = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'parkingTickets'), where('status', '==', 'ativo')), (snap) => {
       setActiveTickets(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ParkingTicket, 'id'>) })));
     });
-    const unsubEntries = onSnapshot(query(collection(db, 'parkingTickets'), where('entryAt', '>=', start), where('entryAt', '<', end)), (snap) => {
+    const unsubEntries = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'parkingTickets'), where('entryAt', '>=', start), where('entryAt', '<', end)), (snap) => {
       setTodayEntries(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ParkingTicket, 'id'>) })));
     });
-    const unsubExits = onSnapshot(query(collection(db, 'parkingTickets'), where('status', '==', 'finalizado'), where('exitAt', '>=', start), where('exitAt', '<', end)), (snap) => {
+    const unsubExits = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'parkingTickets'), where('status', '==', 'finalizado'), where('exitAt', '>=', start), where('exitAt', '<', end)), (snap) => {
       setTodayExits(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ParkingTicket, 'id'>) })));
     });
-    const unsubSpaces = onSnapshot(collection(db, 'parkingSpaces'), (snap) => {
+    const unsubSpaces = onSnapshot(tenantCollection(db, profile?.tenantId, 'parkingSpaces'), (snap) => {
       setSpaces(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<ParkingSpace, 'id'>) })));
     });
-    const unsubCash = onSnapshot(query(collection(db, 'cashRegisters'), where('status', '==', 'aberto')), (snap) => {
+    const unsubCash = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'cashRegisters'), where('status', '==', 'aberto')), (snap) => {
       const row = snap.docs[0];
       setOpenCash(row ? { id: row.id, ...(row.data() as Omit<CashRegister, 'id'>) } : null);
     });
@@ -44,7 +45,7 @@ export default function DashboardPage() {
       unsubSpaces();
       unsubCash();
     };
-  }, []);
+  }, [profile?.tenantId]);
 
   const revenueToday = useMemo(() => todayExits.reduce((sum, item) => sum + (item.amountCharged || 0), 0), [todayExits]);
   const freeSpaces = spaces.filter((space) => space.status === 'livre').length;
