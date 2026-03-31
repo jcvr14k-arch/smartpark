@@ -246,10 +246,11 @@ export default function PrintSaidaPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <style jsx global>{`<style>{`
+<style>{`
   html.print-route-active,
   body.print-route-active {
-    background: #fff !important;;
+    background: #fff !important;
+
           margin: 0 !important;
           padding: 0 !important;
           min-height: auto !important;
