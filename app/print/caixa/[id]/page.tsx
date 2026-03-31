@@ -1,20 +1,24 @@
 'use client';
 
-import { doc, getDoc } from 'firebase/firestore';
+import { getDoc } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { db } from '@/lib/firebase';
+import { tenantDoc } from '@/lib/tenant';
 import { CashRegister, EstablishmentSettings } from '@/types';
 import { money, shortDateTime } from '@/utils/format';
 
 export default function PrintCaixaPage({ params }: { params: { id: string } }) {
+  const searchParams = useSearchParams();
+  const tenantId = searchParams.get('tenant');
   const [cash, setCash] = useState<CashRegister | null>(null);
   const [settings, setSettings] = useState<EstablishmentSettings | null>(null);
 
   useEffect(() => {
     async function load() {
       const [cashSnap, settingsSnap] = await Promise.all([
-        getDoc(doc(db, 'cashRegisters', params.id)),
-        getDoc(doc(db, 'settings', 'establishment')),
+        getDoc(tenantDoc(db, tenantId, 'cashRegisters', params.id)),
+        getDoc(tenantDoc(db, tenantId, 'settings', 'establishment')),
       ]);
 
       if (cashSnap.exists()) {
@@ -30,7 +34,7 @@ export default function PrintCaixaPage({ params }: { params: { id: string } }) {
     }
 
     load();
-  }, [params.id]);
+  }, [params.id, tenantId]);
 
   const sangrias = useMemo(
     () => cash?.withdrawals?.reduce((sum, item) => sum + item.amount, 0) || 0,
