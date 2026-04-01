@@ -492,62 +492,134 @@ export default function RelatoriosPage() {
               <p className="text-sm text-slate-500">{filtered.length} encontradas</p>
             </div>
 
-            <div className="table-shell table-shell--reports mt-4 max-h-[560px] overflow-auto">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Cupom</th>
-                    <th>Placa</th>
-                    <th>Valor</th>
-                    <th>Pagamento</th>
-                    <th>Comprovante</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {paginated.length ? (
-                    paginated.map((ticket) => {
-                      const whatsappUrl = buildReceiptWhatsappUrl(
-                        ticket,
-                        settings?.name || 'Estacionamento'
-                      );
+            <div className="mt-4 space-y-3 md:hidden">
+              {paginated.length ? (
+                paginated.map((ticket) => {
+                  const whatsappUrl = buildReceiptWhatsappUrl(
+                    ticket,
+                    settings?.name || 'Estacionamento'
+                  );
 
-                      return (
-                        <tr key={ticket.id}>
-                          <td>{shortDateTime(ticket.exitAt || ticket.entryAt)}</td>
-                          <td>{ticket.shortTicket}</td>
-                          <td>{ticket.plate || '-'}</td>
-                          <td>{money(ticket.amountCharged)}</td>
-                          <td>{ticket.paymentMethod || '-'}</td>
-                          <td>
-                            <div className="mobile-stack flex flex-col gap-2 sm:flex-row">
-                              <button
-                                className="secondary-button py-2"
-                                onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}
-                              >
-                                <Printer size={16} />
-                              </button>
-                              <a
-                                className={`secondary-button py-2 ${
-                                  !whatsappUrl ? 'pointer-events-none opacity-50' : ''
-                                }`}
-                                href={whatsappUrl || '#'}
-                                target="_blank"
-                              >
-                                <MessageCircleMore size={16} />
-                              </a>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
+                  return (
+                    <div key={ticket.id} className="rounded-[20px] border border-slate-200 bg-white p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">Cupom</p>
+                          <p className="mt-1 text-base font-semibold text-slate-900">{ticket.shortTicket}</p>
+                        </div>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-semibold capitalize text-slate-700">
+                          {ticket.paymentMethod || '-'}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                        <div className="min-w-0">
+                          <p className="text-slate-500">Data</p>
+                          <p className="font-medium text-slate-900 break-words">
+                            {shortDateTime(ticket.exitAt || ticket.entryAt)}
+                          </p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-slate-500">Placa</p>
+                          <p className="font-medium text-slate-900 break-words">{ticket.plate || '-'}</p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-slate-500">Valor</p>
+                          <p className="font-semibold text-slate-900 break-words">{money(ticket.amountCharged)}</p>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-slate-500">Pagamento</p>
+                          <p className="font-medium text-slate-900 break-words capitalize">{ticket.paymentMethod || '-'}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-col gap-2">
+                        <button
+                          className="secondary-button w-full justify-center py-2"
+                          onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}
+                        >
+                          <Printer size={16} />
+                          Imprimir
+                        </button>
+                        <a
+                          className={`secondary-button w-full justify-center py-2 ${
+                            !whatsappUrl ? 'pointer-events-none opacity-50' : ''
+                          }`}
+                          href={whatsappUrl || '#'}
+                          target="_blank"
+                        >
+                          <MessageCircleMore size={16} />
+                          WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="rounded-[20px] border border-slate-200 bg-white px-4 py-5 text-center text-sm text-slate-500">
+                  Nenhum registro
+                </div>
+              )}
+            </div>
+
+            <div className="hidden md:block">
+              <div className="table-shell table-shell--reports mt-4 max-h-[560px] overflow-auto">
+                <table>
+                  <thead>
                     <tr>
-                      <td colSpan={6}>Nenhum registro</td>
+                      <th>Data</th>
+                      <th>Cupom</th>
+                      <th>Placa</th>
+                      <th>Valor</th>
+                      <th>Pagamento</th>
+                      <th>Comprovante</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {paginated.length ? (
+                      paginated.map((ticket) => {
+                        const whatsappUrl = buildReceiptWhatsappUrl(
+                          ticket,
+                          settings?.name || 'Estacionamento'
+                        );
+
+                        return (
+                          <tr key={ticket.id}>
+                            <td>{shortDateTime(ticket.exitAt || ticket.entryAt)}</td>
+                            <td>{ticket.shortTicket}</td>
+                            <td>{ticket.plate || '-'}</td>
+                            <td>{money(ticket.amountCharged)}</td>
+                            <td>{ticket.paymentMethod || '-'}</td>
+                            <td>
+                              <div className="mobile-stack flex flex-col gap-2 sm:flex-row">
+                                <button
+                                  className="secondary-button py-2"
+                                  onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}
+                                >
+                                  <Printer size={16} />
+                                </button>
+                                <a
+                                  className={`secondary-button py-2 ${
+                                    !whatsappUrl ? 'pointer-events-none opacity-50' : ''
+                                  }`}
+                                  href={whatsappUrl || '#'}
+                                  target="_blank"
+                                >
+                                  <MessageCircleMore size={16} />
+                                </a>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={6}>Nenhum registro</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div className="mt-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
