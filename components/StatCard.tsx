@@ -21,14 +21,14 @@ export default function StatCard({
   };
 
   return (
-    <div className="panel-card p-6 lg:p-5">
-      <div className="flex items-start justify-between gap-4">
+    <div className="panel-card p-4 lg:p-5">
+      <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-base font-bold text-slate-500 lg:text-sm lg:font-medium">{title}</p>
-          <h3 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-950 lg:text-3xl lg:font-semibold">{value}</h3>
-          {hint ? <p className="mt-2 text-sm font-medium text-slate-400 lg:font-normal lg:text-slate-500">{hint}</p> : null}
+          <p className="text-xs font-semibold text-slate-500 lg:text-sm lg:font-medium">{title}</p>
+          <h3 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 lg:mt-2 lg:text-3xl lg:font-semibold">{value}</h3>
+          {hint ? <p className="mt-1 text-xs text-slate-500 lg:mt-2 lg:text-sm">{hint}</p> : null}
         </div>
-        <div className={`rounded-2xl p-4 lg:p-3 ${toneMap[tone]} shadow-sm`}>{icon}</div>
+        <div className={`rounded-lg p-2.5 lg:rounded-2xl lg:p-3 ${toneMap[tone]} shadow-sm flex-shrink-0`}>{icon}</div>
       </div>
     </div>
   );
