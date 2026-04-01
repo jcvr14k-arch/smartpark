@@ -193,9 +193,6 @@ export default function UsuariosPage() {
                       <p className="font-medium text-slate-900">{user.role === 'admin' ? 'Administrador' : 'Vendedor'}</p>
                     </div>
                   </div>
-                  <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                    <button className="secondary-button w-full justify-center py-2 sm:w-auto" onClick={() => toggleActive(user)}>{user.active === false ? 'Ativar' : 'Desativar'}</button>
-                  </div>
                 </div>
               ))}
             </div>
@@ -220,10 +217,7 @@ export default function UsuariosPage() {
                         <td>{user.role === 'admin' ? 'Administrador' : 'Vendedor'}</td>
                         <td><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${user.active === false ? 'bg-slate-100 text-slate-700' : 'bg-emerald-100 text-emerald-700'}`}>{user.active === false ? 'Inativo' : 'Ativo'}</span></td>
                         <td>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <button className="secondary-button py-2" onClick={() => toggleActive(user)}>{user.active === false ? 'Ativar' : 'Desativar'}</button>
-                            <ActionMenu user={user} />
-                          </div>
+                          <ActionMenu user={user} />
                         </td>
                       </tr>
                     ))}
