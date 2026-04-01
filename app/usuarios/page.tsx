@@ -95,7 +95,7 @@ export default function UsuariosPage() {
                     </div>
                   </div>
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                    <button className="secondary-button w-full justify-center py-2 sm:w-auto" onClick={() => toggleRole(user)}>Alternar Role</button>
+                    <button className="secondary-button w-full justify-center py-2 sm:w-auto" onClick={() => toggleRole(user)}>Alternar Usuário</button>
                     <button className="secondary-button w-full justify-center py-2 sm:w-auto" onClick={() => toggleActive(user)}>{user.active === false ? 'Ativar' : 'Inativar'}</button>
                   </div>
                 </div>
