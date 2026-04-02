@@ -47,7 +47,7 @@ export default function SaidaPage() {
       if (snap.exists()) setSettings(snap.data() as EstablishmentSettings);
     });
     if (!profile) return () => { unsubTickets(); unsubSpaces(); unsubPrices(); unsubMonthly(); };
-    const unsubCash = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'cashRegisters'), where('status', '==', 'aberto'), where('operatorId', '==', profile.id)), (snapshot) => {
+    const unsubCash = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'cashRegisters'), where('status', '==', 'aberto')), (snapshot) => {
       const row = snapshot.docs[0];
       setOpenCashRegister(row ? { id: row.id, ...(row.data() as Omit<CashRegister, 'id'>) } : null);
     });
@@ -74,11 +74,15 @@ export default function SaidaPage() {
     const monthly = monthlyCustomers.find((item) => item.plate === ticket.plate && item.active);
     const overdueDays = monthly?.endDate ? diffDaysFromNow(monthly.endDate) : 999;
     const isValidMonthly = Boolean(monthly && overdueDays <= 0);
-    const calc = calculateParkingAmount(ticket.entryAt, priceSettings.find((item) => item.vehicleType === ticket.vehicleType));
+    const calc = calculateParkingAmount(
+      ticket.entryAt,
+      priceSettings.find((item) => item.vehicleType === ticket.vehicleType),
+      settings?.chargeMode || 'fracionado'
+    );
     setPreview({ ticket, total: isValidMonthly ? 0 : calc.total, minutes: calc.minutes, monthly: monthly || null, fractions: calc.fractions || 0, fractionValue: calc.fractionValue || 0 });
     setPaymentMethod(isValidMonthly ? 'mensalista' : 'dinheiro');
     setMessage('');
-  }, [monthlyCustomers, priceSettings]);
+  }, [monthlyCustomers, priceSettings, settings?.chargeMode]);
 
   const handleQrRead = useCallback((decodedText: string) => {
     try {

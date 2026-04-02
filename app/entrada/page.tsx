@@ -46,7 +46,7 @@ export default function EntradaPage() {
     if (!profile) return () => unsubSpaces();
 
     const unsubCash = onSnapshot(
-      query(tenantCollection(db, profile?.tenantId, 'cashRegisters'), where('status', '==', 'aberto'), where('operatorId', '==', profile.id)),
+      query(tenantCollection(db, profile?.tenantId, 'cashRegisters'), where('status', '==', 'aberto')),
       (snapshot) => {
         const row = snapshot.docs[0];
         setOpenCashRegister(row ? { id: row.id, ...(row.data() as Omit<CashRegister, 'id'>) } : null);

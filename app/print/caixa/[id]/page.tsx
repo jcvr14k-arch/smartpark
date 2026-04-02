@@ -137,9 +137,10 @@ export default function PrintCaixaPage({ params }: { params: { id: string } }) {
           </div>
           <div className="ticket-dashed" />
           <div className="ticket-subtitle">Fechamento de Caixa</div>
-          <div className="ticket-row"><span className="ticket-row-label">Operador:</span><span className="ticket-row-value">{cash.operatorName}</span></div>
+          <div className="ticket-row"><span className="ticket-row-label">Aberto por:</span><span className="ticket-row-value">{cash.operatorName}</span></div>
           <div className="ticket-row"><span className="ticket-row-label">Abertura:</span><span className="ticket-row-value">{shortDateTime(cash.openedAt)}</span></div>
           <div className="ticket-row"><span className="ticket-row-label">Fechamento:</span><span className="ticket-row-value">{shortDateTime(cash.closedAt)}</span></div>
+          <div className="ticket-row"><span className="ticket-row-label">Fechado por:</span><span className="ticket-row-value">{cash.closedByName || '-'}</span></div>
           <div className="ticket-row"><span className="ticket-row-label">Valor Inicial:</span><span className="ticket-row-value">{money(cash.openingAmount)}</span></div>
           <div className="ticket-row"><span className="ticket-row-label">Faturamento:</span><span className="ticket-row-value">{money(cash.revenueByTickets + cash.revenueByMonthly)}</span></div>
           <div className="ticket-row"><span className="ticket-row-label">Sangrias:</span><span className="ticket-row-value">{money(sangrias)}</span></div>

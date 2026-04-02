@@ -12,6 +12,7 @@ export async function getEstablishmentSettings(tenantId?: string | null): Promis
       active: true,
       printerWidth: '80mm',
       printMethod: 'browser',
+      chargeMode: 'fracionado',
     };
   }
   return snap.data() as EstablishmentSettings;

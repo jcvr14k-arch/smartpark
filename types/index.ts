@@ -5,6 +5,7 @@ export type CashStatus = 'aberto' | 'fechado';
 export type PaymentMethod = 'dinheiro' | 'pix' | 'cartao' | 'mensalista';
 export type PrinterWidth = '80mm' | '58mm';
 export type PrintMethod = 'browser' | 'rawbt';
+export type ChargeMode = 'fracionado' | 'integral';
 
 export interface AppUser {
   id: string;
@@ -88,6 +89,8 @@ export interface CashRegister {
   revenueByTickets: number;
   revenueByMonthly: number;
   status: CashStatus;
+  closedById?: string;
+  closedByName?: string;
 }
 
 export interface MonthlyCustomer {
@@ -120,4 +123,5 @@ export interface EstablishmentSettings {
   ticketFooter?: string;
   printerWidth?: PrinterWidth;
   printMethod?: PrintMethod;
+  chargeMode?: ChargeMode;
 }

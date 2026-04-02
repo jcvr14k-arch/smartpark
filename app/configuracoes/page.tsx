@@ -13,6 +13,7 @@ const supportUrl = `https://api.whatsapp.com/send/?phone=5533999675619&text=${en
 
 type PrinterWidth = '80mm' | '58mm';
 type PrintMethod = 'browser' | 'rawbt';
+type ChargeMode = 'fracionado' | 'integral';
 
 export default function ConfiguracoesPage() {
   const { profile } = useAuth();
@@ -25,6 +26,7 @@ export default function ConfiguracoesPage() {
     document: '',
     printerWidth: '80mm',
     printMethod: 'browser',
+    chargeMode: 'fracionado',
   });
   const [message, setMessage] = useState('');
 
@@ -40,6 +42,8 @@ export default function ConfiguracoesPage() {
             (snap.data() as EstablishmentSettings).printerWidth || '80mm',
           printMethod:
             (snap.data() as EstablishmentSettings).printMethod || 'browser',
+          chargeMode:
+            (snap.data() as EstablishmentSettings).chargeMode || 'fracionado',
         };
 
         setSettings(loadedSettings);
@@ -176,6 +180,29 @@ export default function ConfiguracoesPage() {
             </select>
             <p className="mt-2 text-xs text-slate-500">
               Use RAWBT em celulares Android com impressora térmica Bluetooth.
+            </p>
+          </div>
+
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Forma de Cobrança
+            </label>
+            <select
+              className="app-input"
+              value={settings.chargeMode || 'fracionado'}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  chargeMode: e.target.value as ChargeMode,
+                })
+              }
+            >
+              <option value="fracionado">Valor fracionado</option>
+              <option value="integral">Valor integral por hora</option>
+            </select>
+            <p className="mt-2 text-xs text-slate-500">
+              Fracionado cobra por blocos de 15 minutos. Integral cobra a hora cheia e horas adicionais completas.
             </p>
           </div>
 

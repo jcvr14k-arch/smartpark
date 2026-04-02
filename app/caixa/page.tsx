@@ -56,8 +56,7 @@ export default function CaixaPage() {
     const unsubOpen = onSnapshot(
       query(
         tenantCollection(db, profile?.tenantId, 'cashRegisters'),
-        where('status', '==', 'aberto'),
-        where('operatorId', '==', profile.id)
+        where('status', '==', 'aberto')
       ),
       (snap) => {
         const row = snap.docs[0];
@@ -90,13 +89,12 @@ export default function CaixaPage() {
     const existingOpenCash = await getDocs(
       query(
         tenantCollection(db, profile?.tenantId, 'cashRegisters'),
-        where('status', '==', 'aberto'),
-        where('operatorId', '==', profile.id)
+        where('status', '==', 'aberto')
       )
     );
 
     if (!existingOpenCash.empty) {
-      setMessage('Já existe um caixa aberto para este operador.');
+      setMessage('Já existe um caixa global aberto para o estacionamento.');
       setShowOpenForm(false);
       return;
     }
@@ -144,6 +142,8 @@ export default function CaixaPage() {
     await updateDoc(tenantDoc(db, profile?.tenantId, 'cashRegisters', openCash.id), {
       status: 'fechado',
       closedAt,
+      closedById: profile?.id || '',
+      closedByName: profile?.name || '',
     });
 
     openPrintPage(`/print/caixa/${openCash.id}`);
@@ -209,7 +209,7 @@ export default function CaixaPage() {
 
           <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
             <div className="rounded-3xl bg-slate-50 p-4">
-              <p className="text-sm text-slate-500">Operador</p>
+              <p className="text-sm text-slate-500">Aberto por</p>
               <p className="mt-2 font-semibold text-slate-900">{openCash.operatorName}</p>
             </div>
 
@@ -337,6 +337,7 @@ export default function CaixaPage() {
                         <td>{row.operatorName}</td>
                         <td>{shortDateTime(row.openedAt)}</td>
                         <td>{shortDateTime(row.closedAt)}</td>
+                        <td>{row.closedByName || '-'}</td>
                         <td>{money(row.openingAmount)}</td>
                         <td>{money(row.revenueByTickets + row.revenueByMonthly)}</td>
                         <td>{money(sangrias)}</td>

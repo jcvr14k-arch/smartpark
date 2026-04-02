@@ -32,7 +32,7 @@ export default function MensalistasPage() {
       setRows(snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<MonthlyCustomer, 'id'>) })));
     });
     if (!profile) return () => unsubRows();
-    const unsubCash = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'cashRegisters'), where('status', '==', 'aberto'), where('operatorId', '==', profile.id)), (snap) => {
+    const unsubCash = onSnapshot(query(tenantCollection(db, profile?.tenantId, 'cashRegisters'), where('status', '==', 'aberto')), (snap) => {
       const row = snap.docs[0];
       setOpenCashRegister(row ? { id: row.id, ...(row.data() as Omit<CashRegister, 'id'>) } : null);
     });
