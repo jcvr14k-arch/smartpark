@@ -41,21 +41,36 @@ export default function PrintSaidaPage({ params }: { params: { id: string } }) {
   const finish = () => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    
-    if (returnTo) {
-      window.location.href = returnTo;
-      return;
-    }
-    
+
+    const saidaPath = returnTo || '/saida';
+    const goToSaida = () => {
+      window.location.replace(saidaPath);
+    };
+    const syncOpenerToSaida = () => {
+      if (!window.opener) return false;
+      try {
+        window.opener.location.replace(saidaPath);
+        window.opener.focus?.();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    };
+
     if (/Android/i.test(navigator.userAgent)) {
-      window.history.back();
+      goToSaida();
       return;
     }
-    
-    try { window.close(); } catch (_) {}
-    setTimeout(() => {
-      if (!window.closed) window.history.back();
-    }, 500);
+
+    if (syncOpenerToSaida()) {
+      try { window.close(); } catch (_) {}
+      setTimeout(() => {
+        if (!window.closed) goToSaida();
+      }, 300);
+      return;
+    }
+
+    goToSaida();
   };
 
   function handlePrintClick() {

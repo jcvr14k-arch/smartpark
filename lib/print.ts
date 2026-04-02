@@ -20,9 +20,6 @@ export function openPrintPage(path: string) {
     url.searchParams.set('tenant', tenantId);
   }
 
-  if (!url.searchParams.get('returnTo')) {
-    url.searchParams.set('returnTo', '/');
-  }
 
   if (useRawBtFlow) {
     url.searchParams.set('printMode', 'rawbt');

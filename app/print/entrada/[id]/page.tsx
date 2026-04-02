@@ -52,23 +52,33 @@ export default function PrintEntradaPage({ params }: { params: { id: string } })
   const finish = () => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    
-    if (printMode === 'rawbt' || /Android/i.test(navigator.userAgent)) {
+
+    const canGoBack = typeof window !== 'undefined' && window.history.length > 1;
+    const hasOpener = typeof window !== 'undefined' && !!window.opener;
+    const goBackOrReturn = () => {
+      if (canGoBack) {
+        window.history.back();
+        return;
+      }
       if (returnTo) {
         window.location.replace(returnTo);
-      } else {
-        window.history.back();
       }
+    };
+
+    if (printMode === 'rawbt' || /Android/i.test(navigator.userAgent)) {
+      goBackOrReturn();
       return;
     }
-    
-    try { window.close(); } catch (_) {}
-    setTimeout(() => {
-      if (!window.closed) {
-        if (returnTo) window.location.replace(returnTo);
-        else window.history.back();
-      }
-    }, 500);
+
+    if (hasOpener) {
+      try { window.close(); } catch (_) {}
+      setTimeout(() => {
+        if (!window.closed) goBackOrReturn();
+      }, 300);
+      return;
+    }
+
+    goBackOrReturn();
   };
 
   function handlePrintClick() {

@@ -38,21 +38,33 @@ export default function PrintCaixaPage({ params }: { params: { id: string } }) {
   const finish = () => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    
-    if (returnTo) {
-      window.location.href = returnTo;
-      return;
-    }
-    
+
+    const canGoBack = typeof window !== 'undefined' && window.history.length > 1;
+    const hasOpener = typeof window !== 'undefined' && !!window.opener;
+    const goBackOrReturn = () => {
+      if (canGoBack) {
+        window.history.back();
+        return;
+      }
+      if (returnTo) {
+        window.location.replace(returnTo);
+      }
+    };
+
     if (/Android/i.test(navigator.userAgent)) {
-      window.history.back();
+      goBackOrReturn();
       return;
     }
-    
-    try { window.close(); } catch (_) {}
-    setTimeout(() => {
-      if (!window.closed) window.history.back();
-    }, 500);
+
+    if (hasOpener) {
+      try { window.close(); } catch (_) {}
+      setTimeout(() => {
+        if (!window.closed) goBackOrReturn();
+      }, 300);
+      return;
+    }
+
+    goBackOrReturn();
   };
 
   function handlePrintClick() {
