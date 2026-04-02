@@ -161,9 +161,9 @@ export default function PrecosPage() {
               />
 
               <Field
-                label="Tolerância (min)"
+                label="Tolerância na saída por hora (min)"
                 value={editing.tolerancia}
-                placeholder="Digite a tolerância em minutos"
+                placeholder="Ex: após cada hora, tolerar mais 10 min"
                 onChange={(value) =>
                   setEditing({ ...editing, tolerancia: Number(value || 0) })
                 }
@@ -227,7 +227,7 @@ export default function PrecosPage() {
                   <strong>{money(row.mensalista)}</strong>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tolerância</span>
+                  <span>Tolerância na saída</span>
                   <strong>{row.tolerancia} min</strong>
                 </div>
               </div>
