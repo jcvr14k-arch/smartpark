@@ -1,41 +1,11 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import { LifeBuoy, LockKeyhole, Mail } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { LifeBuoy, ShieldCheck } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function SupportLoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/support/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Não foi possível autenticar o suporte.');
-      }
-
-      router.replace('/suporte/clientes');
-      router.refresh();
-    } catch (err: any) {
-      setError(err?.message || 'Falha ao entrar.');
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { profile } = useAuth();
 
   return (
     <div className="min-h-screen bg-app px-4 py-6 md:px-6 md:py-8">
@@ -46,52 +16,28 @@ export default function SupportLoginPage() {
               <LifeBuoy size={16} />
               Área exclusiva do suporte SmartPark
             </div>
-            <h1 className="mt-5 text-3xl font-semibold text-slate-950">Entrar no suporte</h1>
+            <h1 className="mt-5 text-3xl font-semibold text-slate-950">Acesso pelo login principal</h1>
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Faça login com as credenciais do time de suporte para gerar tokens de primeiro acesso.
+              O módulo de suporte agora usa o mesmo login do sistema. Apenas usuários com cargo <strong>suporte</strong> conseguem acessar o painel.
             </p>
           </div>
 
-          <div className="px-8 py-8 md:px-10 md:py-10">
-            <form className="space-y-5" onSubmit={handleSubmit}>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">E-mail</label>
-                <div className="relative">
-                  <Mail className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    className="app-input h-14 pl-11"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="suporte@smartpark.com"
-                    required
-                  />
-                </div>
-              </div>
+          <div className="space-y-4 px-8 py-8 md:px-10 md:py-10">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600">
+              Faça login normalmente em <span className="font-semibold text-slate-900">/login</span> e depois acesse <span className="font-semibold text-slate-900">/suporte/clientes</span>.
+            </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">Senha</label>
-                <div className="relative">
-                  <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    className="app-input h-14 pl-11"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Digite a senha do suporte"
-                    required
-                  />
-                </div>
-              </div>
-
-              {error ? (
-                <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>
-              ) : null}
-
-              <button className="primary-button h-14 w-full justify-center text-base" disabled={loading}>
-                {loading ? 'Entrando...' : 'Acessar painel de suporte'}
-              </button>
-            </form>
+            {profile ? (
+              <Link className="primary-button h-12 w-full justify-center" href={profile.role === 'suporte' ? '/suporte/clientes' : '/'}>
+                <ShieldCheck size={16} />
+                Continuar com minha sessão
+              </Link>
+            ) : (
+              <Link className="primary-button h-12 w-full justify-center" href="/login">
+                <ShieldCheck size={16} />
+                Ir para o login
+              </Link>
+            )}
           </div>
         </div>
       </div>

@@ -8,6 +8,7 @@ import {
   Car,
   CreditCard,
   LayoutDashboard,
+  LifeBuoy,
   LogOut,
   Menu,
   Settings,
@@ -33,6 +34,7 @@ const menu: { href: string; label: string; icon: any; roles: UserRole[] }[] = [
   { href: '/relatorios', label: 'Relatórios', icon: BarChart3, roles: ['admin'] },
   { href: '/usuarios', label: 'Usuários', icon: ShieldCheck, roles: ['admin'] },
   { href: '/configuracoes', label: 'Configurações', icon: Settings, roles: ['admin', 'vendedor'] },
+  { href: '/suporte/clientes', label: 'Suporte', icon: LifeBuoy, roles: ['suporte'] },
 ];
 
 export default function Sidebar() {
@@ -48,7 +50,8 @@ export default function Sidebar() {
 
   if (!profile) return null;
 
-  const roleLabel = profile.role === 'admin' ? 'Administrador' : 'Vendedor';
+  const roleLabel =
+    profile.role === 'admin' ? 'Administrador' : profile.role === 'suporte' ? 'Suporte' : 'Vendedor';
 
   async function handleLogout() {
     await logout();

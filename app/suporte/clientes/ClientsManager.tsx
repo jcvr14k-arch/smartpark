@@ -1,7 +1,10 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Copy, LifeBuoy, LogOut, Plus, ShieldX } from 'lucide-react';
+import { Copy, LifeBuoy, Plus, ShieldX } from 'lucide-react';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { auth } from '@/lib/firebase';
 
 type ClientTokenStatus = 'PENDENTE' | 'UTILIZADO' | 'EXPIRADO';
 
@@ -33,7 +36,21 @@ function statusClasses(status: ClientTokenStatus) {
   return 'border-amber-200 bg-amber-50 text-amber-700';
 }
 
+async function getAuthHeaders() {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error('Sua sessão expirou. Faça login novamente.');
+  }
+
+  const token = await user.getIdToken();
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+  };
+}
+
 export default function ClientsManager() {
+  const { profile, logout } = useAuth();
   const [items, setItems] = useState<ClientTokenItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -47,7 +64,10 @@ export default function ClientsManager() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/support/clients', { cache: 'no-store' });
+      const response = await fetch('/api/support/clients', {
+        cache: 'no-store',
+        headers: await getAuthHeaders(),
+      });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Falha ao carregar clientes.');
       setItems(data.items || []);
@@ -70,7 +90,7 @@ export default function ClientsManager() {
     try {
       const response = await fetch('/api/support/clients', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await getAuthHeaders(),
         body: JSON.stringify({ nome, email }),
       });
       const data = await response.json();
@@ -86,7 +106,10 @@ export default function ClientsManager() {
 
   async function handleRevoke(id: string) {
     try {
-      const response = await fetch(`/api/support/clients/${id}/revoke`, { method: 'POST' });
+      const response = await fetch(`/api/support/clients/${id}/revoke`, {
+        method: 'POST',
+        headers: await getAuthHeaders(),
+      });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Não foi possível revogar o token.');
       setItems((current) => current.map((item) => (item.id === id ? { ...item, status: 'EXPIRADO' } : item)));
@@ -96,8 +119,8 @@ export default function ClientsManager() {
   }
 
   async function handleLogout() {
-    await fetch('/api/support/logout', { method: 'POST' });
-    window.location.href = '/suporte/login';
+    await logout();
+    window.location.href = '/login';
   }
 
   const pendingCount = useMemo(() => items.filter((item) => item.status === 'PENDENTE').length, [items]);
@@ -113,12 +136,14 @@ export default function ClientsManager() {
                 Painel de suporte SmartPark
               </div>
               <h1 className="mt-3 text-2xl font-semibold text-slate-950 md:text-3xl">Clientes e tokens de primeiro acesso</h1>
-              <p className="mt-2 text-sm text-slate-500">{pendingCount} token(s) pendente(s) aguardando ativação.</p>
+              <p className="mt-2 text-sm text-slate-500">
+                {pendingCount} token(s) pendente(s) aguardando ativação.
+                {profile?.email ? ` Sessão ativa como ${profile.email}.` : ''}
+              </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
               <button className="secondary-button" onClick={handleLogout} type="button">
-                <LogOut size={16} />
                 Sair
               </button>
               <button
@@ -221,8 +246,15 @@ export default function ClientsManager() {
                     <Copy size={16} />
                     Copiar token
                   </button>
-                  <button className="primary-button" onClick={() => setModalOpen(false)} type="button">
-                    Já copiei
+                  <button
+                    className="primary-button"
+                    onClick={() => {
+                      setModalOpen(false);
+                      setGeneratedToken(null);
+                    }}
+                    type="button"
+                  >
+                    Fechar
                   </button>
                 </div>
               </div>
@@ -230,7 +262,7 @@ export default function ClientsManager() {
               <form className="space-y-5" onSubmit={handleCreateClient}>
                 <div>
                   <h2 className="text-xl font-semibold text-slate-950">Novo cliente</h2>
-                  <p className="mt-2 text-sm text-slate-500">Gere um tenantId único e um token de primeiro acesso válido por 7 dias.</p>
+                  <p className="mt-2 text-sm text-slate-500">Cadastre os dados básicos para gerar o token de primeiro acesso.</p>
                 </div>
 
                 <div>

@@ -176,6 +176,12 @@ export async function createDocument(collectionName: string, data: FirestoreMap,
   return decodeDocument(response);
 }
 
+
+export async function getDocument(collectionName: string, docId: string) {
+  const response = await firestoreFetch(`/${collectionName}/${docId}`);
+  return decodeDocument(response);
+}
+
 export async function listDocuments(collectionName: string) {
   const response = await firestoreFetch(`/${collectionName}`);
   return ((response.documents || []) as any[]).map(decodeDocument);

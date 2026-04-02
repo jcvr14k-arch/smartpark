@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'vendedor';
+export type UserRole = 'admin' | 'vendedor' | 'suporte';
 export type VehicleType = 'CARRO' | 'MOTO' | 'CAMINHONETE' | 'CAMINHAO';
 export type TicketStatus = 'ativo' | 'finalizado';
 export type CashStatus = 'aberto' | 'fechado';

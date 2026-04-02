@@ -191,7 +191,7 @@ export default function UsuariosPage() {
         <PageHeader title="Usuários do Estabelecimento" subtitle="Gerencie usuários, permissões e acessos" actions={<button className="primary-button" onClick={() => setShowForm((v) => !v)}><Plus size={16} />Novo Funcionário</button>} />
         <div className="mb-6 flex flex-wrap gap-3">{(['Todos', 'Ativos', 'Inativos'] as const).map((item) => <button key={item} className={`pill-tab ${filter === item ? 'pill-tab-active' : ''}`} onClick={() => setFilter(item)}>{item}</button>)}<span className="pill-tab">{tenantUsers.length} usuários</span></div>
 
-        {showForm ? <div className="panel-card mb-6 p-6"><h2 className="text-lg font-semibold text-slate-900">Novo Funcionário</h2><form className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5" onSubmit={handleCreate}><input className="app-input" placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} required /><input className="app-input" type="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required /><input className="app-input" type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} required /><select className="app-input" value={role} onChange={(e) => setRole(e.target.value as UserRole)}><option value="admin">Administrador</option><option value="vendedor">Vendedor</option></select><div className="flex gap-3"><button className="primary-button" type="submit">Salvar</button><button className="secondary-button" type="button" onClick={() => setShowForm(false)}>Cancelar</button></div></form></div> : null}
+        {showForm ? <div className="panel-card mb-6 p-6"><h2 className="text-lg font-semibold text-slate-900">Novo Funcionário</h2><form className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5" onSubmit={handleCreate}><input className="app-input" placeholder="Nome" value={name} onChange={(e) => setName(e.target.value)} required /><input className="app-input" type="email" placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)} required /><input className="app-input" type="password" placeholder="Senha" value={password} onChange={(e) => setPassword(e.target.value)} required /><select className="app-input" value={role} onChange={(e) => setRole(e.target.value as UserRole)}><option value="admin">Administrador</option><option value="vendedor">Vendedor</option><option value="suporte">Suporte</option></select><div className="flex gap-3"><button className="primary-button" type="submit">Salvar</button><button className="secondary-button" type="button" onClick={() => setShowForm(false)}>Cancelar</button></div></form></div> : null}
         {message ? <p className="mb-4 text-sm text-blue-700">{message}</p> : null}
 
         {filtered.length ? (
@@ -216,7 +216,7 @@ export default function UsuariosPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-slate-500">Cargo</p>
-                      <p className="font-medium text-slate-900">{user.role === 'admin' ? 'Administrador' : 'Vendedor'}</p>
+                      <p className="font-medium text-slate-900">{user.role === 'admin' ? 'Administrador' : user.role === 'suporte' ? 'Suporte' : 'Vendedor'}</p>
                     </div>
                   </div>
                 </div>
@@ -240,7 +240,7 @@ export default function UsuariosPage() {
                       <tr key={user.id}>
                         <td>{user.name}</td>
                         <td className="break-all">{user.email}</td>
-                        <td>{user.role === 'admin' ? 'Administrador' : 'Vendedor'}</td>
+                        <td>{user.role === 'admin' ? 'Administrador' : user.role === 'suporte' ? 'Suporte' : 'Vendedor'}</td>
                         <td><span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${user.active === false ? 'bg-slate-100 text-slate-700' : 'bg-emerald-100 text-emerald-700'}`}>{user.active === false ? 'Inativo' : 'Ativo'}</span></td>
                         <td>
                           <ActionMenu user={user} />
@@ -303,6 +303,7 @@ export default function UsuariosPage() {
                   <select className="app-input" value={roleValue} onChange={(e) => setRoleValue(e.target.value as UserRole)}>
                     <option value="admin">Administrador</option>
                     <option value="vendedor">Vendedor</option>
+                    <option value="suporte">Suporte</option>
                   </select>
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">

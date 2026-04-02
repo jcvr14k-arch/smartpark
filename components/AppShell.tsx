@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 
-const publicRoutes = ['/login'];
+const publicRoutes = ['/login', '/primeiro-acesso', '/suporte/login'];
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -13,10 +13,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const { loading, profile } = useAuth();
 
   const isPrintRoute = pathname.startsWith('/print');
+  const isSupportRoute = pathname.startsWith('/suporte');
+  const isPublic = publicRoutes.includes(pathname) || isPrintRoute;
 
   useEffect(() => {
     if (loading) return;
-    const isPublic = publicRoutes.includes(pathname) || isPrintRoute;
 
     if (!profile && !isPublic) {
       router.replace('/login');
@@ -24,9 +25,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
     }
 
     if (profile && pathname === '/login') {
+      router.replace(profile.role === 'suporte' ? '/suporte/clientes' : '/');
+      return;
+    }
+
+    if (profile && pathname === '/suporte/login') {
+      router.replace(profile.role === 'suporte' ? '/suporte/clientes' : '/');
+      return;
+    }
+
+    if (profile && isSupportRoute && profile.role !== 'suporte') {
       router.replace('/');
     }
-  }, [isPrintRoute, loading, pathname, profile, router]);
+  }, [isPrintRoute, isPublic, isSupportRoute, loading, pathname, profile, router]);
 
   if (loading) {
     return (
@@ -36,7 +47,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     );
   }
 
-  if (pathname === '/login') return <>{children}</>;
+  if (pathname === '/login' || pathname === '/primeiro-acesso' || pathname === '/suporte/login') return <>{children}</>;
   if (isPrintRoute) return <>{children}</>;
 
   return (

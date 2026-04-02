@@ -3,7 +3,7 @@ import { randomBytes, randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 
 import { createDocument, listDocuments, patchDocument } from '@/lib/support/firestore-rest';
-import { ensureSupportSession } from '@/lib/support/session';
+import { verifySupportAccess } from '@/lib/support/auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -24,7 +24,7 @@ type ClientTokenItem = {
 };
 
 function unauthorized() {
-  return NextResponse.json({ error: 'Sessão de suporte inválida.' }, { status: 401 });
+  return NextResponse.json({ error: 'Acesso permitido apenas para usuários com cargo de suporte.' }, { status: 401 });
 }
 
 function normalizeClientTokenStatus(doc: ClientTokenItem): ClientTokenStatus {
@@ -43,8 +43,9 @@ function getDateValue(value?: string) {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
-export async function GET() {
-  if (!ensureSupportSession()) return unauthorized();
+export async function GET(request: Request) {
+  const supportUser = await verifySupportAccess(request);
+  if (!supportUser) return unauthorized();
 
   try {
     const docs = (await listDocuments('client_tokens')) as ClientTokenItem[];
@@ -73,7 +74,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!ensureSupportSession()) return unauthorized();
+  const supportUser = await verifySupportAccess(request);
+  if (!supportUser) return unauthorized();
 
   try {
     const { nome, email } = (await request.json()) as { nome?: string; email?: string };
@@ -96,6 +98,8 @@ export async function POST(request: Request) {
       criadoEm: now,
       expiraEm,
       utilizadoEm: null,
+      criadoPorUid: supportUser.uid,
+      criadoPorEmail: supportUser.email,
     });
 
     return NextResponse.json({
