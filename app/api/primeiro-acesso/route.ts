@@ -5,7 +5,16 @@ import { patchDocument, queryCollectionByField } from '@/lib/support/firestore-r
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-function resolveTokenState(doc: any) {
+type ClientTokenDoc = {
+  id: string;
+  status?: 'PENDENTE' | 'UTILIZADO' | 'EXPIRADO' | string;
+  expiraEm?: string;
+  email?: string;
+  nome?: string;
+  tenantId?: string;
+};
+
+function resolveTokenState(doc: ClientTokenDoc | undefined) {
   if (!doc) return { valid: false, reason: 'Token inválido' };
   if (doc.status === 'UTILIZADO') return { valid: false, reason: 'Token já utilizado' };
   const expiresAt = doc.expiraEm ? Date.parse(doc.expiraEm) : 0;
@@ -26,7 +35,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Informe o token de acesso.' }, { status: 400 });
       }
 
-      const matches = await queryCollectionByField('client_tokens', 'token', token);
+      const matches = (await queryCollectionByField('client_tokens', 'token', token)) as ClientTokenDoc[];
       const doc = matches[0];
       const state = resolveTokenState(doc);
       if (!state.valid) {

@@ -1,17 +1,18 @@
-/// <reference types="node" />
 import { NextResponse } from 'next/server';
-import { SUPPORT_COOKIE_NAME } from '@/lib/support/session';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Endpoint legado desativado. Use o login principal do SmartPark com cargo suporte.' },
+    { status: 410 }
+  );
+}
 
 export async function POST() {
-  const response = NextResponse.json({ ok: true });
-  response.cookies.set({
-    name: SUPPORT_COOKIE_NAME,
-    value: '',
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-    path: '/',
-    maxAge: 0,
-  });
-  return response;
+  return NextResponse.json(
+    { error: 'Endpoint legado desativado. Use o login principal do SmartPark com cargo suporte.' },
+    { status: 410 }
+  );
 }

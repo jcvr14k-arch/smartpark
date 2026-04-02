@@ -1,48 +1,46 @@
 /// <reference types="node" />
 import 'server-only';
 
-import { headers } from 'next/headers';
+import { getDocument } from '@/lib/support/firestore-rest';
 
-import {
-  getAdminAccessToken,
-  getDocumentByPath,
-  mapFirestoreDocument,
-} from '@/lib/support/firestore-rest';
+type FirebaseLookupResponse = {
+  users?: Array<{
+    localId?: string;
+    email?: string;
+  }>;
+};
 
-type SupportUserProfile = {
+type SupportProfile = {
   id: string;
   _name?: string;
-  nome?: string;
   email?: string;
   role?: string;
   cargo?: string;
   tenantId?: string;
+  [key: string]: any;
 };
 
-export type SupportAuthUser = {
-  uid: string;
-  email?: string;
-  role: string;
-  cargo: string;
-  profile: SupportUserProfile;
-};
-
-function parseBearerToken(authorization?: string | null) {
-  if (!authorization) return null;
-  const [type, token] = authorization.split(' ');
-  if (!type || !token) return null;
-  if (type.toLowerCase() !== 'bearer') return null;
-  return token.trim();
-}
-
-async function verifyFirebaseIdToken(idToken: string) {
+function getApiKey() {
   const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
   if (!apiKey) {
-    throw new Error('NEXT_PUBLIC_FIREBASE_API_KEY não definida.');
+    throw new Error('NEXT_PUBLIC_FIREBASE_API_KEY não definido.');
   }
+  return apiKey;
+}
+
+function normalizeRole(profile: SupportProfile | null | undefined) {
+  return String(profile?.role ?? profile?.cargo ?? '').toLowerCase().trim();
+}
+
+export async function verifySupportAccess(request: Request) {
+  const authHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+  if (!authHeader?.startsWith('Bearer ')) return null;
+
+  const idToken = authHeader.slice(7).trim();
+  if (!idToken) return null;
 
   const response = await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`,
+    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${getApiKey()}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -51,57 +49,22 @@ async function verifyFirebaseIdToken(idToken: string) {
     }
   );
 
-  const data = await response.json();
+  if (!response.ok) return null;
 
-  if (!response.ok || !data?.users?.length) {
-    return null;
-  }
+  const data = (await response.json()) as FirebaseLookupResponse;
+  const uid = data.users?.[0]?.localId;
+  if (!uid) return null;
 
-  const user = data.users[0];
-  return {
-    uid: user.localId as string,
-    email: user.email as string | undefined,
-  };
-}
-
-async function getUserProfile(uid: string): Promise<SupportUserProfile | null> {
-  const accessToken = await getAdminAccessToken();
-  const document = await getDocumentByPath(`users/${uid}`, accessToken);
-
-  if (!document) return null;
-
-  return mapFirestoreDocument(document) as SupportUserProfile;
-}
-
-export async function getSupportUserFromRequest(): Promise<SupportAuthUser | null> {
-  const authorization = headers().get('authorization');
-  const idToken = parseBearerToken(authorization);
-
-  if (!idToken) return null;
-
-  const authUser = await verifyFirebaseIdToken(idToken);
-  if (!authUser?.uid) return null;
-
-  const profile = await getUserProfile(authUser.uid);
+  const profile = (await getDocument('users', uid).catch(() => null)) as SupportProfile | null;
   if (!profile) return null;
 
-  const normalizedRole = String(profile.role ?? profile.cargo ?? '')
-    .toLowerCase()
-    .trim();
-
-  if (normalizedRole !== 'suporte' && normalizedRole !== 'support') {
-    return null;
-  }
+  const normalizedRole = normalizeRole(profile);
+  if (normalizedRole !== 'suporte' && normalizedRole !== 'support') return null;
 
   return {
-    uid: authUser.uid,
-    email: authUser.email,
-    role: String(profile.role ?? ''),
-    cargo: String(profile.cargo ?? ''),
+    uid,
+    email: data.users?.[0]?.email || profile.email || '',
     profile,
+    role: normalizedRole,
   };
-}
-
-export async function verifySupportAccess(): Promise<SupportAuthUser | null> {
-  return getSupportUserFromRequest();
 }

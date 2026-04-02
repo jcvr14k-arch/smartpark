@@ -43,15 +43,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const profileSnap = await getDoc(profileRef);
 
       if (profileSnap.exists()) {
-        const rawProfile = profileSnap.data() as Omit<AppUser, 'id'>;
+        const rawProfile = profileSnap.data() as (Omit<AppUser, 'id'> & { cargo?: string; role?: string });
+        const normalizedRole = ((rawProfile.role || rawProfile.cargo || 'vendedor') as AppUser['role']);
         const loadedProfile: AppUser = {
           id: profileSnap.id,
           ...rawProfile,
+          role: normalizedRole,
           tenantId: normalizeTenantId(rawProfile.tenantId),
         };
 
+        const updates: Record<string, any> = {};
         if (!rawProfile.tenantId) {
-          await updateDoc(profileRef, { tenantId: DEFAULT_TENANT_ID });
+          updates.tenantId = DEFAULT_TENANT_ID;
+        }
+        if (!rawProfile.role && rawProfile.cargo) {
+          updates.role = normalizedRole;
+        }
+        if (Object.keys(updates).length) {
+          await updateDoc(profileRef, updates);
         }
 
         if (loadedProfile.active === false) {
