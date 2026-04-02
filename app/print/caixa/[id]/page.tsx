@@ -4,7 +4,7 @@ import { getDoc, getDocs, query, where } from 'firebase/firestore';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { tenantDoc } from '@/lib/tenant';
+import { tenantCollection, tenantDoc } from '@/lib/tenant';
 import { CashRegister, EstablishmentSettings, ParkingTicket, VehicleType } from '@/types';
 import { money, shortDateTime } from '@/utils/format';
 
