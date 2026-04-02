@@ -27,11 +27,24 @@ function normalizeClientTokenStatus(doc: any) {
   return doc.status || 'PENDENTE';
 }
 
+type ClientTokenItem = {
+  id: string;
+  _name: string;
+  nome?: string;
+  email?: string;
+  tenantId?: string;
+  token?: string;
+  status?: 'PENDENTE' | 'UTILIZADO' | 'EXPIRADO' | string;
+  criadoEm?: string;
+  expiraEm?: string;
+  utilizadoEm?: string | null;
+};
+
 export async function GET() {
   if (!ensureSupportSession()) return unauthorized();
 
   try {
-    const docs = await listDocuments('client_tokens');
+    const docs = (await listDocuments('client_tokens')) as ClientTokenItem[];
     const normalized = await Promise.all(
       docs.map(async (doc) => {
         const status = normalizeClientTokenStatus(doc);
