@@ -2,6 +2,7 @@
 import 'server-only';
 
 import { createHmac, randomUUID, timingSafeEqual } from 'crypto';
+import { cookies } from 'next/headers';
 
 export const SUPPORT_COOKIE_NAME = 'smartpark_support_session';
 const SESSION_DURATION_MS = 8 * 60 * 60 * 1000;
@@ -64,8 +65,10 @@ export function verifySupportSessionCookie(cookieValue?: string | null): Support
   try {
     const rawPayload = fromBase64Url(encodedPayload).toString('utf8');
     const expectedSignature = signPayload(rawPayload);
-    const isValidSignature = timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
 
+    if (signature.length !== expectedSignature.length) return null;
+
+    const isValidSignature = timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
     if (!isValidSignature) return null;
 
     const payload = JSON.parse(rawPayload) as SupportSessionPayload;
@@ -75,4 +78,9 @@ export function verifySupportSessionCookie(cookieValue?: string | null): Support
   } catch {
     return null;
   }
+}
+
+export function ensureSupportSession() {
+  const payload = verifySupportSessionCookie(cookies().get(SUPPORT_COOKIE_NAME)?.value);
+  return payload;
 }

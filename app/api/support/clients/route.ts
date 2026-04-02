@@ -1,11 +1,14 @@
+/// <reference types="node" />
+import { randomBytes, randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
 
+import { createDocument, listDocuments, patchDocument } from '@/lib/support/firestore-rest';
 import { ensureSupportSession } from '@/lib/support/session';
-import {
-  listDocuments,
-  normalizeClientTokenStatus,
-  patchDocument,
-} from '@/lib/support/firestore-rest';
+
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+type ClientTokenStatus = 'PENDENTE' | 'UTILIZADO' | 'EXPIRADO';
 
 type ClientTokenItem = {
   id: string;
@@ -14,20 +17,31 @@ type ClientTokenItem = {
   email?: string;
   tenantId?: string;
   token?: string;
-  status?: 'PENDENTE' | 'UTILIZADO' | 'EXPIRADO' | string;
+  status?: ClientTokenStatus | string;
   criadoEm?: string;
   expiraEm?: string;
   utilizadoEm?: string | null;
 };
 
-const unauthorized = () =>
-  NextResponse.json({ error: 'Não autorizado.' }, { status: 401 });
+function unauthorized() {
+  return NextResponse.json({ error: 'Sessão de suporte inválida.' }, { status: 401 });
+}
 
-const getDateValue = (value?: string) => {
+function normalizeClientTokenStatus(doc: ClientTokenItem): ClientTokenStatus {
+  const now = Date.now();
+  const expiraEm = doc.expiraEm ? Date.parse(doc.expiraEm) : 0;
+
+  if (doc.status === 'UTILIZADO') return 'UTILIZADO';
+  if (doc.status === 'EXPIRADO') return 'EXPIRADO';
+  if (expiraEm && expiraEm < now) return 'EXPIRADO';
+  return 'PENDENTE';
+}
+
+function getDateValue(value?: string) {
   if (!value) return 0;
   const parsed = Date.parse(value);
   return Number.isNaN(parsed) ? 0 : parsed;
-};
+}
 
 export async function GET() {
   if (!ensureSupportSession()) return unauthorized();
@@ -47,14 +61,50 @@ export async function GET() {
       })
     );
 
-    normalized.sort(
-      (a, b) => getDateValue(b.criadoEm) - getDateValue(a.criadoEm)
-    );
+    normalized.sort((a, b) => getDateValue(b.criadoEm) - getDateValue(a.criadoEm));
 
     return NextResponse.json({ items: normalized });
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Erro ao buscar clientes.' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  if (!ensureSupportSession()) return unauthorized();
+
+  try {
+    const { nome, email } = (await request.json()) as { nome?: string; email?: string };
+
+    if (!nome?.trim() || !email?.trim()) {
+      return NextResponse.json({ error: 'Nome e e-mail são obrigatórios.' }, { status: 400 });
+    }
+
+    const now = new Date();
+    const expiraEm = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const tenantId = randomUUID();
+    const token = randomBytes(16).toString('hex');
+
+    const created = await createDocument('client_tokens', {
+      nome: nome.trim(),
+      email: email.trim().toLowerCase(),
+      tenantId,
+      token,
+      status: 'PENDENTE',
+      criadoEm: now,
+      expiraEm,
+      utilizadoEm: null,
+    });
+
+    return NextResponse.json({
+      item: created,
+      token,
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || 'Erro ao criar cliente.' },
       { status: 500 }
     );
   }
