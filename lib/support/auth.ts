@@ -101,3 +101,7 @@ export async function getSupportUserFromRequest(): Promise<SupportAuthUser | nul
     profile,
   };
 }
+
+export async function verifySupportAccess(): Promise<SupportAuthUser | null> {
+  return getSupportUserFromRequest();
+}
