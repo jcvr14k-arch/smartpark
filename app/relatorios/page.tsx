@@ -15,7 +15,7 @@ import { EstablishmentSettings, ParkingTicket, PaymentMethod } from '@/types';
 import { money, shortDateTime } from '@/utils/format';
 import { buildReceiptWhatsappUrl } from '@/utils/whatsapp';
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 8;
 
 export default function RelatoriosPage() {
   const { profile } = useAuth();
@@ -563,8 +563,16 @@ export default function RelatoriosPage() {
             </div>
 
             <div className="hidden md:block">
-              <div className="table-shell table-shell--reports mt-4 max-h-[560px] overflow-auto">
-                <table>
+              <div className="table-shell table-shell--reports mt-4 max-h-[540px] overflow-y-auto overflow-x-hidden">
+                <table className="w-full table-fixed">
+                  <colgroup>
+                    <col className="w-[28%]" />
+                    <col className="w-[12%]" />
+                    <col className="w-[18%]" />
+                    <col className="w-[16%]" />
+                    <col className="w-[14%]" />
+                    <col className="w-[12%]" />
+                  </colgroup>
                   <thead>
                     <tr>
                       <th>Data</th>
@@ -591,15 +599,15 @@ export default function RelatoriosPage() {
                             <td>{money(ticket.amountCharged)}</td>
                             <td>{ticket.paymentMethod || '-'}</td>
                             <td>
-                              <div className="mobile-stack flex flex-col gap-2 sm:flex-row">
+                              <div className="flex items-center gap-2">
                                 <button
-                                  className="secondary-button py-2"
+                                  className="secondary-button min-w-[44px] justify-center px-3 py-2"
                                   onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}
                                 >
                                   <Printer size={16} />
                                 </button>
                                 <a
-                                  className={`secondary-button py-2 ${
+                                  className={`secondary-button min-w-[44px] justify-center px-3 py-2 ${
                                     !whatsappUrl ? 'pointer-events-none opacity-50' : ''
                                   }`}
                                   href={whatsappUrl || '#'}

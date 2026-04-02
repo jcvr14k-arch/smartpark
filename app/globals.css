@@ -127,7 +127,16 @@ textarea {
   }
 
   .table-shell--reports table {
-    min-width: 720px;
+    width: 100%;
+    min-width: 100%;
+    table-layout: fixed;
+  }
+
+  .table-shell--reports th,
+  .table-shell--reports td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .table-shell thead {
