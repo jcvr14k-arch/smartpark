@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { getDoc, onSnapshot } from 'firebase/firestore';
-import { Download, FileText, MessageCircleMore, Printer, Search } from 'lucide-react';
+import Link from 'next/link';
+import { Download, Eye, FileText, MessageCircleMore, Printer, Search } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import PageHeader from '@/components/PageHeader';
 import RoleGuard from '@/components/RoleGuard';
@@ -534,6 +535,13 @@ export default function RelatoriosPage() {
                       </div>
 
                       <div className="mt-4 flex flex-col gap-2">
+                        <Link
+                          className="secondary-button w-full justify-center py-2"
+                          href={`/tickets/${ticket.id}`}
+                        >
+                          <Eye size={16} />
+                          Detalhar
+                        </Link>
                         <button
                           className="secondary-button w-full justify-center py-2"
                           onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}
@@ -580,7 +588,7 @@ export default function RelatoriosPage() {
                       <th>Placa</th>
                       <th>Valor</th>
                       <th>Pagamento</th>
-                      <th>Comprovante</th>
+                      <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -599,7 +607,14 @@ export default function RelatoriosPage() {
                             <td>{money(ticket.amountCharged)}</td>
                             <td>{ticket.paymentMethod || '-'}</td>
                             <td>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Link
+                                  className="secondary-button min-w-[44px] justify-center px-3 py-2"
+                                  href={`/tickets/${ticket.id}`}
+                                  title="Detalhar"
+                                >
+                                  <Eye size={16} />
+                                </Link>
                                 <button
                                   className="secondary-button min-w-[44px] justify-center px-3 py-2"
                                   onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}

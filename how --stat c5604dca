@@ -1,0 +1,103 @@
+* [33m56530d73[m Remove node_modules e .next do repositório
+* [33m55a673bc[m Remove node_modules e .next do repositório
+* [33ma4c1ee50[m Adiciona ajuste de valores no admin tools
+* [33m87a8613e[m Adiciona ajuste de valores no admin tools
+* [33m1d2ff9a2[m Adiciona ajuste de valores no admin tools
+* [33mec576382[m Ajusta cobrança integral para meia hora por bloco adicional
+[31m|[m * [33m03d7e975[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Remove node_modules e .next do repositório
+[31m|[m * [33mfe9a5485[m Adiciona ajuste de valores no admin tools
+[31m|[m * [33md2e2357c[m Adiciona ajuste de valores no admin tools
+[31m|[m * [33m0bc2c2f9[m Adiciona ajuste de valores no admin tools
+[31m|[m * [33m4a29dd5f[m Ajusta cobrança integral para meia hora por bloco adicional
+[31m|[m[31m/[m  
+* [33mc5604dca[m Implementa tolerância na saída por hora
+* [33m68ab9edc[m Ajusta espaçamento do cupom 58mm
+* [33m84590c95[m Atualiza módulo de suporte por cargo
+* [33md42f6fb9[m Estabiliza módulo de suporte por cargo
+* [33ma3ed08cf[m Corrige firestore-rest e remove login legado do suporte
+* [33mf6b9b56b[m Corrige exports do firestore-rest no módulo de suporte
+* [33ma5cbdb10[m Corrige export verifySupportAccess do módulo de suporte
+* [33m4690ddee[m Corrige tipagem de auth do módulo de suporte
+* [33mcc9ee9ae[m Converte módulo de suporte para acesso por cargo
+* [33ma8f8ace1[m Corrige build do módulo de suporte
+* [33m96438519[m Corrige ordenação por data no módulo de suporte
+* [33m8af4cd19[m Corrige tipagem do módulo de suporte
+* [33mec9d8856[m Adiciona módulo de suporte com login, clientes e primeiro acesso
+* [33m7667af68[m Corrige fechamento de caixa por classe de veículo
+* [33mc88e06ca[m Adiciona quantidade de veículos por classe no fechamento de caixa
+* [33mca374cc9[m Corrige histórico de caixas no mobile
+* [33m064947cb[m Corrige menu de ações da página de usuários no desktop
+* [33m43f78d1f[m Ajusta card de transações recentes nos relatórios
+* [33mf6908a79[m Corrige página de usuários no desktop
+* [33m3121c7de[m Corrige popup de impressão e retorno automático para saída
+* [33md326d767[m Atualiza SmartPark: caixa global e cobrança por modo
+* [33m5a74d5ea[m Mantem impressao original e ajusta somente a pagina de usuarios
+* [33m280c963c[m Ajusta retorno apos impressao e remove botao visivel de desativar usuarios
+* [33me70f8322[m Adiciona acao desativar no menu de usuarios
+* [33m91160b3c[m Implementa menu de acoes em usuarios com editar excluir e alterar cargo
+* [33mf0717de1[m Corrige nomes em Ingles na pagina de usuarios
+* [33m8bfe4831[m Corrige nomes em Inglês na pagina de usuarios
+* [33m27d940ce[m Corrige scroll lateral na pagina de usuarios no mobile
+* [33mc1a42620[m Corrige scroll lateral na pagina de usuarios no mobile
+* [33m736dd575[m Aumenta fontes dos comprovantes 58mm e corrige rodape no mobile
+* [33m4b24f6f2[m Corrige scroll lateral na pagina de relatorios no mobile
+* [33m4f544f97[m Corrige dashboard e saida no mobile sem scroll lateral
+* [33mbff5d2d6[m Corrige viewport mobile nas paginas de saida e relatorios
+* [33me61595cc[m Ajusta cupom 58mm e corrige zoom mobile em saida e relatorios
+* [33m180ba321[m Atualizacao layout mobile e impressao
+* [33med918272[m fix: corrige erro de sintaxe e finaliza v9
+* [33ma3446693[m feat: v9 final com botão fechar e layout robusto
+* [33md639b2d9[m feat: fechamento automático e otimização Android v7
+* [33mb66dc0e5[m feat: fechamento automático e otimização Android v7
+* [33m122c8e4f[m fix: remove print-context com erro de tipagem e resolve compilação
+* [33me769d451[m fix: resolve definitivamente erro de compilação print-context e limpa cache
+* [33mb4411af6[m Refatora fluxo de impressao Android e estabiliza preview termico
+* [33m298a4ea8[m Refatora fluxo de impressao Android e estabiliza preview termico
+* [33m0d315e0b[m Refatora fluxo de impressao Android e estabiliza preview termico
+* [33m4711808b[m Refatora fluxo de impressao Android e estabiliza preview termico
+* [33mde788b65[m Refatora fluxo de impressao Android e estabiliza preview termico
+* [33mca9c67ea[m Refatora fluxo de impressao Android e estabiliza preview termico
+* [33m6d2d3dfc[m Ajusta impressao Android para tela minima com retorno ao sistema
+* [33m83b9a5c0[m Restaura impressao desktop e ajusta fluxo Android RAWBT
+* [33ma0a266ed[m Refatora fluxo de impressao Android e estabiliza preview termico
+* [33mabd32c5b[m Ajusta impressao Android para tela minima com retorno ao sistema
+* [33m6251c251[m Ajusta impressao Android para tela minima com retorno ao sistema
+* [33m74c42df7[m Ajusta impressao Android para tela minima com retorno ao sistema
+* [33m9b4d77d9[m Refatora impressao Android com rota isolada e window.print apos render
+* [33m85dcc780[m Corrige sintaxe dos arquivos de impressao
+* [33mf8ba9c4c[m Corrige bloco style da pagina de impressao de saida
+* [33m7ada1097[m Corrige bloco style da pagina de impressao de saida
+* [33m1eb2937e[m Corrige preview de impressao no Android carregando cupom na mesma aba
+* [33m45710937[m Remove referencia restante ao RawbtToolbar
+* [33ma7dda52f[m Remove referencia restante ao RawbtToolbar
+* [33m636b2421[m Corrige estado duplicado readyToPrint na impressao de entrada
+* [33m3fb9297f[m Corrige pre-visualizacao e fluxo de impressao no Android
+* [33m1ee7df9c[m Corrige fluxo de impressao Android com retorno automatico ao sistema
+* [33mcabb4539[m Ajusta impressao Android para autoimpressao e retorno automatico
+* [33m8823763a[m Simplifica layout da pagina de usuarios
+* [33m2e039112[m Corrige touch de um dedo no Android no menu mobile
+* [33m8ad1f965[m Corrige touch no Android reescrevendo sidebar mobile
+* [33me5d0b6ab[m Corrige overlay do sidebar mobile bloqueando toque no fundo
+* [33m85953529[m Corrige touch do sidebar mobile no Android
+* [33md2c0b993[m Corrige interacao de toque no Android
+* [33ma0cd63eb[m Corrige menu de acoes da pagina de usuarios com portal
+* [33m869e2d52[m Simplifica pagina de usuarios e remove botao inativar
+* [33m1715644c[m Implementa menu de ações na pagina de usuarios
+* [33mf2f5e8ca[m Restaura configuracao de impressao RAWBT no Android
+* [33m67e954b1[m Remove texto do card de QR na pagina de saida
+* [33mfa8dc88a[m Remove card duplicado do QR e unifica leitura na pagina de saida
+* [33m7c17a295[m Otimiza mobile das paginas de saida e usuarios e altera role para cargo
+* [33m81c20e56[m Corrige sidebar mobile e otimiza relatorios para mobile
+* [33m367e4b9c[m Corrige sidebar mobile e padroniza pagina de saida
+* [33m97c1471b[m Unifica multiempresa com melhorias mobile, relatorios e saida
+* [33m0c13847f[m Restaura isolamento por empresa com tenantId
+* [33m01ab569d[m Ajusta pagina de relatorios e corrige tipagem do sidebar
+* [33mc7697757[m Corrige tipagem do Sidebar
+* [33mc1a79114[m Padroniza cards da pagina de saida
+* [33m007d50c8[m Corrige tipagem do menu lateral no mobile
+* [33mad5fb118[m Otimiza layout mobile para Android e iOS
+* [33m7f4e730e[m Atualiza SmartPark com ajustes RAWBT
+* [33m4f0ceb76[m Corrige build do RAWBT com checagem segura do navigator.share
+* [33m33b3e534[m Implementa suporte de impressão Android via RAWBT
+* [33med3bd411[m Corrige caminhos do repositório local
+* [33m4a9cc88e[m Implementa isolamento por cliente com tenantId no SmartPark
