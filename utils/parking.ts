@@ -19,19 +19,28 @@ function getToleranceAdjustedMinutes(totalMinutes: number, toleranceMinutes: num
   return fullHours * 60 + Math.max(0, remainderMinutes - safeTolerance);
 }
 
-function getChargeableHours(totalMinutes: number, toleranceMinutes: number) {
+function getIntegralAmount(
+  totalMinutes: number,
+  toleranceMinutes: number,
+  valorHora: number,
+  valorAdicional: number
+) {
   if (totalMinutes <= 0) return 0;
 
   const safeTolerance = Math.max(0, Number(toleranceMinutes || 0));
-  if (totalMinutes <= 60) return 1;
+  const firstHourValue = Math.max(0, Number(valorHora || 0));
+  const additionalHourValue = Math.max(0, Number(valorAdicional || valorHora || 0));
+  const halfAdditionalValue = additionalHourValue / 2;
 
-  const fullHours = Math.floor(totalMinutes / 60);
-  const remainderMinutes = totalMinutes % 60;
+  if (totalMinutes <= 60) return firstHourValue;
 
-  if (remainderMinutes === 0) return fullHours;
-  if (remainderMinutes <= safeTolerance) return fullHours;
+  const effectiveExtraMinutes = totalMinutes - 60 - safeTolerance;
+  if (effectiveExtraMinutes <= 0) {
+    return firstHourValue;
+  }
 
-  return fullHours + 1;
+  const additionalBlocks = Math.ceil(effectiveExtraMinutes / 60);
+  return firstHourValue + additionalBlocks * halfAdditionalValue;
 }
 
 export function calculateParkingAmount(
@@ -58,14 +67,7 @@ export function calculateParkingAmount(
   let total = 0;
 
   if (chargeMode === 'integral') {
-    const totalHours = getChargeableHours(minutes, tolerancia);
-
-    if (totalHours > 0) {
-      total = valorHora;
-      if (totalHours > 1) {
-        total += (totalHours - 1) * (valorAdicional || valorHora);
-      }
-    }
+    total = getIntegralAmount(minutes, tolerancia, valorHora, valorAdicional);
   } else {
     total = fractions * fractionValue;
   }
