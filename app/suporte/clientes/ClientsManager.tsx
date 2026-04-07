@@ -367,12 +367,12 @@ export default function ClientsManager() {
 
       {actionItem ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/35 px-4 py-6 sm:items-center">
-          <div className="w-full max-w-[280px] rounded-[16px] border border-slate-200 bg-white p-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)]">
+          <div className="w-full max-w-[250px] rounded-[14px] border border-slate-200 bg-white p-3.5 shadow-[0_18px_48px_rgba(15,23,42,0.16)]">
             <div>
               <h3 className="text-lg font-semibold text-slate-950">Ações do token</h3>
               <p className="mt-1 text-sm text-slate-500">{actionItem.nome} • {actionItem.email}</p>
             </div>
-            <div className="mt-4 space-y-2.5">
+            <div className="mt-3.5 space-y-2">
               <button
                 className="secondary-button w-full justify-center"
                 disabled={actionItem.status !== 'PENDENTE' || revokingId === actionItem.id}
@@ -407,7 +407,7 @@ export default function ClientsManager() {
 
       {modalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-4 py-6">
-          <div className="w-full max-w-[420px] rounded-[16px] border border-slate-200 bg-white p-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)] sm:p-5">
+          <div className="w-full max-w-[360px] rounded-[14px] border border-slate-200 bg-white p-4 shadow-[0_18px_48px_rgba(15,23,42,0.16)]">
             {generatedToken ? (
               <div className="space-y-4">
                 <div>
@@ -415,7 +415,7 @@ export default function ClientsManager() {
                   <p className="mt-2 text-sm text-slate-500">Copie este token e envie para o cliente concluir o primeiro acesso.</p>
                 </div>
 
-                <div className="rounded-xl border border-blue-100 bg-blue-50 p-3.5">
+                <div className="rounded-lg border border-blue-100 bg-blue-50 p-3">
                   <div className="break-all font-mono text-sm font-semibold text-blue-800">{generatedToken}</div>
                 </div>
 
@@ -437,7 +437,7 @@ export default function ClientsManager() {
                 </div>
               </div>
             ) : (
-              <form className="space-y-3.5" onSubmit={handleCreateClient}>
+              <form className="space-y-3" onSubmit={handleCreateClient}>
                 <div>
                   <h2 className="text-xl font-semibold text-slate-950">Novo cliente</h2>
                   <p className="mt-2 text-sm text-slate-500">Crie um token de primeiro acesso para um novo cliente.</p>
@@ -445,7 +445,7 @@ export default function ClientsManager() {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">Nome</label>
-                  <input className="app-input h-11" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome do cliente" required />
+                  <input className="app-input h-10" value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome do cliente" required />
                 </div>
 
                 <div>
