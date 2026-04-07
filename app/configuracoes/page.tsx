@@ -27,6 +27,9 @@ export default function ConfiguracoesPage() {
     printerWidth: '80mm',
     printMethod: 'browser',
     chargeMode: 'fracionado',
+    pixKey: '',
+    pixReceiverName: '',
+    pixCity: '',
   });
   const [message, setMessage] = useState('');
 
@@ -204,6 +207,44 @@ export default function ConfiguracoesPage() {
             <p className="mt-2 text-xs text-slate-500">
               Fracionado cobra por blocos de 15 minutos. Integral cobra a hora cheia e horas adicionais completas.
             </p>
+          </div>
+
+
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Chave PIX
+            </label>
+            <input
+              className="app-input"
+              value={settings.pixKey || ''}
+              onChange={(e) => setSettings({ ...settings, pixKey: e.target.value })}
+              placeholder="CPF, e-mail, telefone ou chave aleatória"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Recebedor PIX
+            </label>
+            <input
+              className="app-input"
+              value={settings.pixReceiverName || ''}
+              onChange={(e) => setSettings({ ...settings, pixReceiverName: e.target.value })}
+              placeholder="Nome exibido no QR Code"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Cidade PIX
+            </label>
+            <input
+              className="app-input"
+              value={settings.pixCity || ''}
+              onChange={(e) => setSettings({ ...settings, pixCity: e.target.value })}
+              placeholder="Cidade para o QR Code PIX"
+            />
           </div>
 
           <div className="md:col-span-2">

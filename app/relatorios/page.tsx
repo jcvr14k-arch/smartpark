@@ -550,33 +550,9 @@ export default function RelatoriosPage() {
                         </div>
                       </div>
 
-                      <div className="mt-4 grid grid-cols-4 gap-2">
-                        <Link
-                          className="secondary-button w-full justify-center px-3 py-2"
-                          href={`/tickets/${ticket.id}`}
-                          title="Detalhar"
-                        >
-                          <Eye size={16} />
-                        </Link>
+                      <div className="mt-4 flex justify-end">
                         <button
-                          className="secondary-button w-full justify-center px-3 py-2"
-                          onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}
-                          title="Imprimir"
-                        >
-                          <Printer size={16} />
-                        </button>
-                        <a
-                          className={`secondary-button w-full justify-center px-3 py-2 ${
-                            !whatsappUrl ? 'pointer-events-none opacity-50' : ''
-                          }`}
-                          href={whatsappUrl || '#'}
-                          target="_blank"
-                          title="WhatsApp"
-                        >
-                          <MessageCircleMore size={16} />
-                        </a>
-                        <button
-                          className="secondary-button w-full justify-center px-3 py-2"
+                          className="secondary-button min-w-[52px] justify-center px-3 py-2"
                           onClick={() => openActions(ticket)}
                           title="Mais ações"
                         >
@@ -630,31 +606,7 @@ export default function RelatoriosPage() {
                             <td>{money(ticket.amountCharged)}</td>
                             <td>{ticket.paymentMethod || '-'}</td>
                             <td>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Link
-                                  className="secondary-button min-w-[44px] justify-center px-3 py-2"
-                                  href={`/tickets/${ticket.id}`}
-                                  title="Detalhar"
-                                >
-                                  <Eye size={16} />
-                                </Link>
-                                <button
-                                  className="secondary-button min-w-[44px] justify-center px-3 py-2"
-                                  onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}
-                                  title="Imprimir"
-                                >
-                                  <Printer size={16} />
-                                </button>
-                                <a
-                                  className={`secondary-button min-w-[44px] justify-center px-3 py-2 ${
-                                    !whatsappUrl ? 'pointer-events-none opacity-50' : ''
-                                  }`}
-                                  href={whatsappUrl || '#'}
-                                  target="_blank"
-                                  title="WhatsApp"
-                                >
-                                  <MessageCircleMore size={16} />
-                                </a>
+                              <div className="flex items-center justify-end">
                                 <button
                                   className="secondary-button min-w-[44px] justify-center px-3 py-2"
                                   onClick={() => openActions(ticket)}

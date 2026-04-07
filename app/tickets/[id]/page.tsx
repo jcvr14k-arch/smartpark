@@ -129,9 +129,7 @@ export default function TicketDetailPage() {
           <div className="mt-4 space-y-3 text-sm text-slate-600">
             <div className="rounded-[22px] bg-slate-50 p-4"><p className="text-slate-500">Operador da entrada</p><p className="mt-1 text-base font-semibold text-slate-900">{ticket.entryOperatorName || ticket.cashierName || '-'}</p></div>
             <div className="rounded-[22px] bg-slate-50 p-4"><p className="text-slate-500">Operador da saída</p><p className="mt-1 text-base font-semibold text-slate-900">{ticket.exitOperatorName || '-'}</p></div>
-            <div className="rounded-[22px] bg-slate-50 p-4"><p className="text-slate-500">Caixa vinculado</p><p className="mt-1 break-all text-base font-semibold text-slate-900">{ticket.closedCashRegisterId || '-'}</p></div>
             <div className="rounded-[22px] bg-slate-50 p-4"><p className="text-slate-500">Vaga</p><p className="mt-1 text-base font-semibold text-slate-900">{ticket.parkingSpaceCode || '-'}</p></div>
-            <div className="rounded-[22px] bg-slate-50 p-4"><p className="text-slate-500">Telefone</p><p className="mt-1 text-base font-semibold text-slate-900">{ticket.phone || '-'}</p></div>
           </div>
         </section>
       </div>
