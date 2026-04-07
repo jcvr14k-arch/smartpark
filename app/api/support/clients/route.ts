@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server';
 import { randomBytes, randomUUID } from 'crypto';
-import { doc, getDoc, getDocs, collection, addDoc, query, where, orderBy, updateDoc, Timestamp } from 'firebase/firestore';
-
-import { db } from '@/lib/firebase';
-import { auth as adminAuth } from 'firebase-admin';
 import { getApps, initializeApp, cert } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 
 function getAdminApp() {
   if (getApps().length) return getApps()[0];
@@ -14,7 +12,7 @@ function getAdminApp() {
   const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
   if (!projectId || !clientEmail || !privateKey) {
-    throw new Error('Variáveis FIREBASE_CLIENT_EMAIL e FIREBASE_PRIVATE_KEY não definidas.');
+    throw new Error('Defina FIREBASE_CLIENT_EMAIL e FIREBASE_PRIVATE_KEY no Vercel.');
   }
 
   return initializeApp({
@@ -27,35 +25,43 @@ function getAdminApp() {
 }
 
 async function getAuthorizedSupportUser(request: Request) {
-  const authorization = request.headers.get('authorization');
-  const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
+  const authHeader = request.headers.get('authorization');
+  const idToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
 
-  if (!token) return null;
+  if (!idToken) return null;
 
-  getAdminApp();
-  const decoded = await adminAuth().verifyIdToken(token);
-  const userDoc = await getDoc(doc(db, 'users', decoded.uid));
+  const app = getAdminApp();
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  if (!userDoc.exists()) return null;
+  const decoded = await auth.verifyIdToken(idToken);
+  const userSnap = await db.collection('users').doc(decoded.uid).get();
 
-  const profile = userDoc.data() as any;
-  const role = String(profile?.role ?? profile?.cargo ?? '').toLowerCase().trim();
+  if (!userSnap.exists) return null;
+
+  const profile = userSnap.data() || {};
+  const role = String((profile as any).role ?? (profile as any).cargo ?? '')
+    .toLowerCase()
+    .trim();
 
   if (role !== 'suporte') return null;
 
   return {
     uid: decoded.uid,
     profile,
+    db,
   };
 }
 
-function normalizeStatus(item: any) {
-  const status = String(item?.status || 'PENDENTE').toUpperCase();
-  if (status === 'UTILIZADO') return 'UTILIZADO';
-  if (status === 'EXPIRADO') return 'EXPIRADO';
+function normalizeStatus(data: any) {
+  const raw = String(data?.status || 'PENDENTE').toUpperCase();
 
-  const expiresAt = item?.expiraEm?.toDate ? item.expiraEm.toDate() : new Date(item?.expiraEm || 0);
-  if (expiresAt && !Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() < Date.now()) {
+  if (raw === 'UTILIZADO') return 'UTILIZADO';
+  if (raw === 'EXPIRADO') return 'EXPIRADO';
+
+  const expiraEm = data?.expiraEm?.toDate?.() ?? (data?.expiraEm ? new Date(data.expiraEm) : null);
+
+  if (expiraEm instanceof Date && !Number.isNaN(expiraEm.getTime()) && expiraEm.getTime() < Date.now()) {
     return 'EXPIRADO';
   }
 
@@ -70,28 +76,26 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Acesso negado.' }, { status: 401 });
     }
 
-    const constraints: any[] = [orderBy('criadoEm', 'desc')];
-    if (supportUser.profile?.tenantId) {
-      constraints.unshift(where('tenantId', '==', supportUser.profile.tenantId));
-    }
+    const snap = await supportUser.db
+      .collection('client_tokens')
+      .orderBy('criadoEm', 'desc')
+      .get();
 
-    const snap = await getDocs(query(collection(db, 'client_tokens'), ...constraints));
-
-    const items = snap.docs.map((item) => {
-      const data = item.data() as any;
+    const items = snap.docs.map((doc) => {
+      const data = doc.data();
       return {
-        id: item.id,
+        id: doc.id,
         ...data,
-        criadoEm: data?.criadoEm?.toDate ? data.criadoEm.toDate().toISOString() : null,
-        expiraEm: data?.expiraEm?.toDate ? data.expiraEm.toDate().toISOString() : null,
-        utilizadoEm: data?.utilizadoEm?.toDate ? data.utilizadoEm.toDate().toISOString() : null,
         status: normalizeStatus(data),
+        criadoEm: data?.criadoEm?.toDate?.()?.toISOString?.() ?? null,
+        expiraEm: data?.expiraEm?.toDate?.()?.toISOString?.() ?? null,
+        utilizadoEm: data?.utilizadoEm?.toDate?.()?.toISOString?.() ?? null,
       };
     });
 
     return NextResponse.json({ items });
   } catch (error: any) {
-    console.error('GET /api/support/clients', error);
+    console.error('GET /api/support/clients error:', error);
     return NextResponse.json(
       { error: error?.message || 'Erro ao buscar clientes.' },
       { status: 500 }
@@ -119,39 +123,38 @@ export async function POST(request: Request) {
     }
 
     const now = new Date();
-    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const expiraEm = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     const tenantId = randomUUID();
     const token = randomBytes(16).toString('hex');
 
-    const docRef = await addDoc(collection(db, 'client_tokens'), {
+    const ref = await supportUser.db.collection('client_tokens').add({
       nome,
       email,
       tenantId,
       token,
       status: 'PENDENTE',
       criadoEm: Timestamp.fromDate(now),
-      expiraEm: Timestamp.fromDate(expiresAt),
+      expiraEm: Timestamp.fromDate(expiraEm),
       utilizadoEm: null,
       criadoPor: supportUser.uid,
-      tenantOwnerId: supportUser.profile?.tenantId || null,
     });
 
     return NextResponse.json({
       item: {
-        id: docRef.id,
+        id: ref.id,
         nome,
         email,
         tenantId,
         token,
         status: 'PENDENTE',
         criadoEm: now.toISOString(),
-        expiraEm: expiresAt.toISOString(),
+        expiraEm: expiraEm.toISOString(),
         utilizadoEm: null,
       },
       token,
     });
   } catch (error: any) {
-    console.error('POST /api/support/clients', error);
+    console.error('POST /api/support/clients error:', error);
     return NextResponse.json(
       { error: error?.message || 'Erro ao criar cliente.' },
       { status: 500 }
