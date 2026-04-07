@@ -20,6 +20,14 @@ type NotificationInput = {
   durationMs?: number;
 };
 
+type ConfirmInput = {
+  title?: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  tone?: 'danger' | 'primary';
+};
+
 interface NotificationContextType {
   notifications: NotificationItem[];
   notify: (input: NotificationInput) => string;
@@ -29,6 +37,7 @@ interface NotificationContextType {
   warning: (message: string, title?: string) => string;
   remove: (id: string) => void;
   clear: () => void;
+  confirm: (input: ConfirmInput) => Promise<boolean>;
 }
 
 const NotificationContext = createContext<NotificationContextType | null>(null);
@@ -83,8 +92,70 @@ function NotificationViewport({ items, onRemove }: { items: NotificationItem[]; 
   );
 }
 
+function ConfirmDialog({
+  open,
+  title,
+  message,
+  confirmText,
+  cancelText,
+  tone,
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean;
+  title?: string;
+  message: string;
+  confirmText: string;
+  cancelText: string;
+  tone: 'danger' | 'primary';
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (!open) return null;
+
+  const confirmStyles =
+    tone === 'danger'
+      ? 'bg-red-600 text-white hover:bg-red-700'
+      : 'bg-blue-600 text-white hover:bg-blue-700';
+
+  return (
+    <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/45 p-4">
+      <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-5 shadow-2xl">
+        <div className="flex items-start gap-3">
+          <div className={`mt-1 rounded-full p-2 ${tone === 'danger' ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-600'}`}>
+            <AlertTriangle size={18} />
+          </div>
+          <div className="min-w-0 flex-1">
+            {title ? <h3 className="text-lg font-semibold text-slate-900">{title}</h3> : null}
+            <p className="mt-1 text-sm leading-6 text-slate-600">{message}</p>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            className="rounded-2xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+            onClick={onCancel}
+          >
+            {cancelText}
+          </button>
+          <button
+            type="button"
+            className={`rounded-2xl px-4 py-2.5 text-sm font-semibold transition ${confirmStyles}`}
+            onClick={onConfirm}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [confirmState, setConfirmState] = useState<(ConfirmInput & { open: boolean }) | null>(null);
+  const confirmResolverRef = useRef<((value: boolean) => void) | null>(null);
   const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const remove = useCallback((id: string) => {
@@ -113,6 +184,28 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     setNotifications([]);
   }, []);
 
+  const closeConfirm = useCallback((value: boolean) => {
+    if (confirmResolverRef.current) {
+      confirmResolverRef.current(value);
+      confirmResolverRef.current = null;
+    }
+    setConfirmState(null);
+  }, []);
+
+  const confirm = useCallback((input: ConfirmInput) => {
+    return new Promise<boolean>((resolve) => {
+      confirmResolverRef.current = resolve;
+      setConfirmState({
+        open: true,
+        title: input.title,
+        message: input.message,
+        confirmText: input.confirmText || 'Confirmar',
+        cancelText: input.cancelText || 'Cancelar',
+        tone: input.tone || 'primary',
+      });
+    });
+  }, []);
+
   const value = useMemo<NotificationContextType>(
     () => ({
       notifications,
@@ -123,14 +216,25 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       warning: (message, title) => notify({ type: 'warning', message, title, durationMs: 4200 }),
       remove,
       clear,
+      confirm,
     }),
-    [notifications, notify, remove, clear]
+    [notifications, notify, remove, clear, confirm]
   );
 
   return (
     <NotificationContext.Provider value={value}>
       {children}
       <NotificationViewport items={notifications} onRemove={remove} />
+      <ConfirmDialog
+        open={Boolean(confirmState?.open)}
+        title={confirmState?.title}
+        message={confirmState?.message || ''}
+        confirmText={confirmState?.confirmText || 'Confirmar'}
+        cancelText={confirmState?.cancelText || 'Cancelar'}
+        tone={confirmState?.tone || 'primary'}
+        onConfirm={() => closeConfirm(true)}
+        onCancel={() => closeConfirm(false)}
+      />
     </NotificationContext.Provider>
   );
 }

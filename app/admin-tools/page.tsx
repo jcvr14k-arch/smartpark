@@ -203,7 +203,13 @@ export default function AdminToolsPage() {
 
   async function handleDeleteTicket(ticket: TicketRow) {
     if (!profile?.tenantId) return;
-    const confirmed = window.confirm(`Excluir o ticket ${ticket.shortTicket}? Esta ação não pode ser desfeita.`);
+    const confirmed = await notifications.confirm({
+      title: 'Excluir ticket',
+      message: `Excluir o ticket ${ticket.shortTicket}? Esta ação não pode ser desfeita.`,
+      confirmText: 'Excluir ticket',
+      cancelText: 'Cancelar',
+      tone: 'danger',
+    });
     if (!confirmed) return;
 
     setSavingId(ticket.id);
@@ -224,7 +230,13 @@ export default function AdminToolsPage() {
 
   async function handleDeleteCash(cash: CashRow) {
     if (!profile?.tenantId) return;
-    const confirmed = window.confirm(`Excluir o caixa ${cash.id}? Esta ação não pode ser desfeita.`);
+    const confirmed = await notifications.confirm({
+      title: 'Excluir caixa',
+      message: `Excluir o caixa ${cash.id}? Esta ação não pode ser desfeita.`,
+      confirmText: 'Excluir caixa',
+      cancelText: 'Cancelar',
+      tone: 'danger',
+    });
     if (!confirmed) return;
 
     setSavingId(cash.id);
@@ -406,7 +418,7 @@ export default function AdminToolsPage() {
                 <div className="icon-soft-blue"><Ticket size={18} /></div>
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Tickets</h2>
-                  <p className="text-sm text-slate-500">Busca por código, ajuste de valor e paginação. Página {ticketPage}.</p>
+                  <p className="text-sm text-slate-500">Busca por código, ajuste de valor e paginação.</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -482,7 +494,7 @@ export default function AdminToolsPage() {
                 <div className="icon-soft-green"><Wallet size={18} /></div>
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Caixas</h2>
-                  <p className="text-sm text-slate-500">Consulta rápida, paginação e exclusão manual. Página {cashPage}.</p>
+                  <p className="text-sm text-slate-500">Consulta rápida, paginação e exclusão manual.</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
