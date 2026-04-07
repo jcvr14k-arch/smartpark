@@ -12,7 +12,7 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { Copy, Eye, EyeOff, LifeBuoy, Loader2, Plus, ShieldX } from 'lucide-react';
+import { Copy, Eye, EyeOff, LifeBuoy, Loader2, MoreVertical, Plus, ShieldX, Trash2 } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
@@ -99,6 +99,7 @@ export default function ClientsManager() {
   const [copied, setCopied] = useState(false);
   const [visibleTokenId, setVisibleTokenId] = useState<string | null>(null);
   const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [actionItem, setActionItem] = useState<ClientTokenItem | null>(null);
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
 
@@ -339,25 +340,15 @@ export default function ClientsManager() {
                         <td className="px-4 py-4">{formatDate(item.criadoEm)}</td>
                         <td className="px-4 py-4">{formatDate(item.expiraEm)}</td>
                         <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-2">
-                            <button
-                              className="secondary-button !min-h-0 px-3 py-2 text-[11px]"
-                              disabled={item.status !== 'PENDENTE' || revokingId === item.id}
-                              onClick={() => handleRevoke(item.id)}
-                              type="button"
-                            >
-                              <ShieldX size={14} />
-                              Revogar
-                            </button>
-                            <button
-                              className="secondary-button !min-h-0 px-3 py-2 text-[11px]"
-                              disabled={revokingId === item.id}
-                              onClick={() => handleDelete(item.id)}
-                              type="button"
-                            >
-                              Excluir
-                            </button>
-                          </div>
+                          <button
+                            className="secondary-button !min-h-0 px-3 py-2 text-[11px]"
+                            disabled={revokingId === item.id}
+                            onClick={() => setActionItem(item)}
+                            type="button"
+                          >
+                            <MoreVertical size={14} />
+                            Ações
+                          </button>
                         </td>
                       </tr>
                     );
@@ -372,6 +363,47 @@ export default function ClientsManager() {
           </div>
         </div>
       </div>
+
+
+      {actionItem ? (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/35 px-4 py-6 sm:items-center">
+          <div className="panel-card w-full max-w-sm rounded-[28px] p-5">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-950">Ações do token</h3>
+              <p className="mt-1 text-sm text-slate-500">{actionItem.nome} • {actionItem.email}</p>
+            </div>
+            <div className="mt-5 space-y-3">
+              <button
+                className="secondary-button w-full justify-center"
+                disabled={actionItem.status !== 'PENDENTE' || revokingId === actionItem.id}
+                onClick={async () => {
+                  await handleRevoke(actionItem.id);
+                  setActionItem(null);
+                }}
+                type="button"
+              >
+                <ShieldX size={16} />
+                Revogar token
+              </button>
+              <button
+                className="secondary-button w-full justify-center border-rose-200 text-rose-700 hover:bg-rose-50"
+                disabled={revokingId === actionItem.id}
+                onClick={async () => {
+                  await handleDelete(actionItem.id);
+                  setActionItem(null);
+                }}
+                type="button"
+              >
+                <Trash2 size={16} />
+                Excluir token
+              </button>
+              <button className="primary-button w-full justify-center" onClick={() => setActionItem(null)} type="button">
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {modalOpen ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 px-4">

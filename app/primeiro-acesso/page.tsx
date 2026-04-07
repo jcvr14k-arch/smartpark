@@ -3,7 +3,7 @@
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, getFirestore, setDoc, Timestamp, updateDoc } from 'firebase/firestore';
 
 import { auth, db, getSecondaryApp } from '@/lib/firebase';
 
@@ -52,7 +52,9 @@ export default function PrimeiroAcessoPage() {
 
     setLoading(true);
 
-    const secondaryAuth = getAuth(getSecondaryApp());
+    const secondaryApp = getSecondaryApp();
+    const secondaryAuth = getAuth(secondaryApp);
+    const secondaryDb = getFirestore(secondaryApp);
 
     try {
       const tokenRef = doc(db, 'client_tokens', normalizedToken);
@@ -84,7 +86,7 @@ export default function PrimeiroAcessoPage() {
       const credential = await createUserWithEmailAndPassword(secondaryAuth, email, senha);
 
       await setDoc(
-        doc(db, 'users', credential.user.uid),
+        doc(secondaryDb, 'users', credential.user.uid),
         {
           uid: credential.user.uid,
           name: nome,
@@ -97,7 +99,7 @@ export default function PrimeiroAcessoPage() {
         { merge: true }
       );
 
-      await updateDoc(tokenRef, {
+      await updateDoc(doc(secondaryDb, 'client_tokens', normalizedToken), {
         status: 'UTILIZADO',
         utilizadoEm: Timestamp.fromDate(new Date()),
       });
