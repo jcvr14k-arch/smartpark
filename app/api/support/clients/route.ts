@@ -1,71 +1,97 @@
-/// <reference types="node" />
-import { randomBytes, randomUUID } from 'crypto';
 import { NextResponse } from 'next/server';
+import { randomBytes, randomUUID } from 'crypto';
+import { doc, getDoc, getDocs, collection, addDoc, query, where, orderBy, updateDoc, Timestamp } from 'firebase/firestore';
 
-import { createDocument, listDocuments, patchDocument } from '@/lib/support/firestore-rest';
-import { verifySupportAccess } from '@/lib/support/auth';
+import { db } from '@/lib/firebase';
+import { auth as adminAuth } from 'firebase-admin';
+import { getApps, initializeApp, cert } from 'firebase-admin/app';
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+function getAdminApp() {
+  if (getApps().length) return getApps()[0];
 
-type ClientTokenStatus = 'PENDENTE' | 'UTILIZADO' | 'EXPIRADO';
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-type ClientTokenItem = {
-  id: string;
-  _name: string;
-  nome?: string;
-  email?: string;
-  tenantId?: string;
-  token?: string;
-  status?: ClientTokenStatus | string;
-  criadoEm?: string;
-  expiraEm?: string;
-  utilizadoEm?: string | null;
-};
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error('Variáveis FIREBASE_CLIENT_EMAIL e FIREBASE_PRIVATE_KEY não definidas.');
+  }
 
-function unauthorized() {
-  return NextResponse.json({ error: 'Acesso negado.' }, { status: 401 });
+  return initializeApp({
+    credential: cert({
+      projectId,
+      clientEmail,
+      privateKey,
+    }),
+  });
 }
 
-function normalizeClientTokenStatus(doc: ClientTokenItem): ClientTokenStatus {
-  const now = Date.now();
-  const expiraEm = doc.expiraEm ? Date.parse(doc.expiraEm) : 0;
+async function getAuthorizedSupportUser(request: Request) {
+  const authorization = request.headers.get('authorization');
+  const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
 
-  if (doc.status === 'UTILIZADO') return 'UTILIZADO';
-  if (doc.status === 'EXPIRADO') return 'EXPIRADO';
-  if (expiraEm && expiraEm < now) return 'EXPIRADO';
+  if (!token) return null;
+
+  getAdminApp();
+  const decoded = await adminAuth().verifyIdToken(token);
+  const userDoc = await getDoc(doc(db, 'users', decoded.uid));
+
+  if (!userDoc.exists()) return null;
+
+  const profile = userDoc.data() as any;
+  const role = String(profile?.role ?? profile?.cargo ?? '').toLowerCase().trim();
+
+  if (role !== 'suporte') return null;
+
+  return {
+    uid: decoded.uid,
+    profile,
+  };
+}
+
+function normalizeStatus(item: any) {
+  const status = String(item?.status || 'PENDENTE').toUpperCase();
+  if (status === 'UTILIZADO') return 'UTILIZADO';
+  if (status === 'EXPIRADO') return 'EXPIRADO';
+
+  const expiresAt = item?.expiraEm?.toDate ? item.expiraEm.toDate() : new Date(item?.expiraEm || 0);
+  if (expiresAt && !Number.isNaN(expiresAt.getTime()) && expiresAt.getTime() < Date.now()) {
+    return 'EXPIRADO';
+  }
+
   return 'PENDENTE';
 }
 
-function getDateValue(value?: string) {
-  if (!value) return 0;
-  const parsed = Date.parse(value);
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
 export async function GET(request: Request) {
-  const supportUser = await verifySupportAccess(request);
-  if (!supportUser) return unauthorized();
-
   try {
-    const docs = (await listDocuments('client_tokens')) as ClientTokenItem[];
+    const supportUser = await getAuthorizedSupportUser(request);
 
-    const normalized = await Promise.all(
-      docs.map(async (doc) => {
-        const status = normalizeClientTokenStatus(doc);
+    if (!supportUser) {
+      return NextResponse.json({ error: 'Acesso negado.' }, { status: 401 });
+    }
 
-        if (status !== doc.status) {
-          await patchDocument('client_tokens', doc.id, { status });
-        }
+    const constraints: any[] = [orderBy('criadoEm', 'desc')];
+    if (supportUser.profile?.tenantId) {
+      constraints.unshift(where('tenantId', '==', supportUser.profile.tenantId));
+    }
 
-        return { ...doc, status };
-      })
-    );
+    const snap = await getDocs(query(collection(db, 'client_tokens'), ...constraints));
 
-    normalized.sort((a, b) => getDateValue(b.criadoEm) - getDateValue(a.criadoEm));
+    const items = snap.docs.map((item) => {
+      const data = item.data() as any;
+      return {
+        id: item.id,
+        ...data,
+        criadoEm: data?.criadoEm?.toDate ? data.criadoEm.toDate().toISOString() : null,
+        expiraEm: data?.expiraEm?.toDate ? data.expiraEm.toDate().toISOString() : null,
+        utilizadoEm: data?.utilizadoEm?.toDate ? data.utilizadoEm.toDate().toISOString() : null,
+        status: normalizeStatus(data),
+      };
+    });
 
-    return NextResponse.json({ items: normalized });
+    return NextResponse.json({ items });
   } catch (error: any) {
+    console.error('GET /api/support/clients', error);
     return NextResponse.json(
       { error: error?.message || 'Erro ao buscar clientes.' },
       { status: 500 }
@@ -74,39 +100,58 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const supportUser = await verifySupportAccess(request);
-  if (!supportUser) return unauthorized();
-
   try {
-    const { nome, email } = (await request.json()) as { nome?: string; email?: string };
+    const supportUser = await getAuthorizedSupportUser(request);
 
-    if (!nome?.trim() || !email?.trim()) {
-      return NextResponse.json({ error: 'Nome e e-mail são obrigatórios.' }, { status: 400 });
+    if (!supportUser) {
+      return NextResponse.json({ error: 'Acesso negado.' }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const nome = String(body?.nome || '').trim();
+    const email = String(body?.email || '').trim().toLowerCase();
+
+    if (!nome || !email) {
+      return NextResponse.json(
+        { error: 'Nome e e-mail são obrigatórios.' },
+        { status: 400 }
+      );
     }
 
     const now = new Date();
-    const expiraEm = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     const tenantId = randomUUID();
     const token = randomBytes(16).toString('hex');
 
-    const created = await createDocument('client_tokens', {
-      nome: nome.trim(),
-      email: email.trim().toLowerCase(),
+    const docRef = await addDoc(collection(db, 'client_tokens'), {
+      nome,
+      email,
       tenantId,
       token,
       status: 'PENDENTE',
-      criadoEm: now,
-      expiraEm,
+      criadoEm: Timestamp.fromDate(now),
+      expiraEm: Timestamp.fromDate(expiresAt),
       utilizadoEm: null,
-      criadoPorUid: supportUser.uid,
-      criadoPorEmail: supportUser.email,
+      criadoPor: supportUser.uid,
+      tenantOwnerId: supportUser.profile?.tenantId || null,
     });
 
     return NextResponse.json({
-      item: created,
+      item: {
+        id: docRef.id,
+        nome,
+        email,
+        tenantId,
+        token,
+        status: 'PENDENTE',
+        criadoEm: now.toISOString(),
+        expiraEm: expiresAt.toISOString(),
+        utilizadoEm: null,
+      },
       token,
     });
   } catch (error: any) {
+    console.error('POST /api/support/clients', error);
     return NextResponse.json(
       { error: error?.message || 'Erro ao criar cliente.' },
       { status: 500 }
