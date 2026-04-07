@@ -423,16 +423,16 @@ export default function AdminToolsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  className="secondary-button px-3 py-2"
+                  className="secondary-button flex h-11 w-11 items-center justify-center p-0"
                   onClick={() => setShowTicketFilters(true)}
                   aria-label="Abrir filtros de tickets"
                 >
-                  <Image src="/filter-descending-sort-icon.svg" alt="Filtro" width={18} height={18} />
+                  <Image src="/filter-descending-sort-icon.svg" alt="Filtro" width={20} height={20} />
                 </button>
-                <button className="secondary-button py-2" onClick={goToPreviousTicketsPage} disabled={ticketPage === 1 || loadingTickets}>
+                <button className="secondary-button flex h-11 w-11 items-center justify-center p-0" onClick={goToPreviousTicketsPage} disabled={ticketPage === 1 || loadingTickets}>
                   <ChevronLeft size={16} />
                 </button>
-                <button className="secondary-button py-2" onClick={goToNextTicketsPage} disabled={!ticketHasNextPage || loadingTickets}>
+                <button className="secondary-button flex h-11 w-11 items-center justify-center p-0" onClick={goToNextTicketsPage} disabled={!ticketHasNextPage || loadingTickets}>
                   <ChevronRight size={16} />
                 </button>
               </div>
@@ -499,16 +499,16 @@ export default function AdminToolsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  className="secondary-button px-3 py-2"
+                  className="secondary-button flex h-11 w-11 items-center justify-center p-0"
                   onClick={() => setShowCashFilters(true)}
                   aria-label="Abrir filtros de caixas"
                 >
-                  <Image src="/filter-descending-sort-icon.svg" alt="Filtro" width={18} height={18} />
+                  <Image src="/filter-descending-sort-icon.svg" alt="Filtro" width={20} height={20} />
                 </button>
-                <button className="secondary-button py-2" onClick={goToPreviousCashPage} disabled={cashPage === 1 || loadingCash}>
+                <button className="secondary-button flex h-11 w-11 items-center justify-center p-0" onClick={goToPreviousCashPage} disabled={cashPage === 1 || loadingCash}>
                   <ChevronLeft size={16} />
                 </button>
-                <button className="secondary-button py-2" onClick={goToNextCashPage} disabled={!cashHasNextPage || loadingCash}>
+                <button className="secondary-button flex h-11 w-11 items-center justify-center p-0" onClick={goToNextCashPage} disabled={!cashHasNextPage || loadingCash}>
                   <ChevronRight size={16} />
                 </button>
               </div>
