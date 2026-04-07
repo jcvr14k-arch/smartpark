@@ -59,7 +59,7 @@ export async function verifySupportAccess(request: Request) {
   if (!profile) return null;
 
   const normalizedRole = normalizeRole(profile);
-  if (!['suporte', 'support', 'admin', 'administrador'].includes(normalizedRole)) return null;
+  if (normalizedRole !== 'suporte' && normalizedRole !== 'support') return null;
 
   return {
     uid,

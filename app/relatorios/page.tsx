@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { getDoc, onSnapshot } from 'firebase/firestore';
-import { Download, FileText, MessageCircleMore, Printer, Search } from 'lucide-react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { Download, Eye, FileText, MessageCircleMore, Printer, Search, X } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import PageHeader from '@/components/PageHeader';
 import RoleGuard from '@/components/RoleGuard';
@@ -26,6 +28,7 @@ export default function RelatoriosPage() {
   const [tickets, setTickets] = useState<ParkingTicket[]>([]);
   const [settings, setSettings] = useState<EstablishmentSettings | null>(null);
   const [page, setPage] = useState(1);
+  const [actionTicket, setActionTicket] = useState<ParkingTicket | null>(null);
 
   useEffect(() => {
     const unsub = onSnapshot(tenantCollection(db, profile?.tenantId, 'parkingTickets'), (snap) => {
@@ -92,6 +95,20 @@ export default function RelatoriosPage() {
   useEffect(() => {
     setPage(1);
   }, [search, startDate, endDate, paymentFilter]);
+
+  const actionWhatsappUrl = useMemo(() => {
+    if (!actionTicket) return '';
+    return buildReceiptWhatsappUrl(actionTicket, settings?.name || 'Estacionamento');
+  }, [actionTicket, settings?.name]);
+
+  function openActions(ticket: ParkingTicket) {
+    setActionTicket(ticket);
+  }
+
+  function closeActions() {
+    setActionTicket(null);
+  }
+
 
   function exportCsv() {
     const header = ['Data', 'Cupom', 'Placa', 'Tipo', 'Valor', 'Pagamento', 'Descrição'];
@@ -533,24 +550,14 @@ export default function RelatoriosPage() {
                         </div>
                       </div>
 
-                      <div className="mt-4 flex flex-col gap-2">
+                      <div className="mt-4 flex justify-end">
                         <button
-                          className="secondary-button w-full justify-center py-2"
-                          onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}
+                          className="secondary-button min-w-[52px] justify-center px-3 py-2"
+                          onClick={() => openActions(ticket)}
+                          title="Mais ações"
                         >
-                          <Printer size={16} />
-                          Imprimir
+                          <Image src="/more-actions.png" alt="Mais ações" width={18} height={18} className="h-[18px] w-[18px]" />
                         </button>
-                        <a
-                          className={`secondary-button w-full justify-center py-2 ${
-                            !whatsappUrl ? 'pointer-events-none opacity-50' : ''
-                          }`}
-                          href={whatsappUrl || '#'}
-                          target="_blank"
-                        >
-                          <MessageCircleMore size={16} />
-                          WhatsApp
-                        </a>
                       </div>
                     </div>
                   );
@@ -580,7 +587,7 @@ export default function RelatoriosPage() {
                       <th>Placa</th>
                       <th>Valor</th>
                       <th>Pagamento</th>
-                      <th>Comprovante</th>
+                      <th>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -599,22 +606,14 @@ export default function RelatoriosPage() {
                             <td>{money(ticket.amountCharged)}</td>
                             <td>{ticket.paymentMethod || '-'}</td>
                             <td>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center justify-end">
                                 <button
                                   className="secondary-button min-w-[44px] justify-center px-3 py-2"
-                                  onClick={() => openPrintPage(`/print/saida/${ticket.id}`)}
+                                  onClick={() => openActions(ticket)}
+                                  title="Mais ações"
                                 >
-                                  <Printer size={16} />
+                                  <Image src="/more-actions.png" alt="Mais ações" width={18} height={18} className="h-[18px] w-[18px]" />
                                 </button>
-                                <a
-                                  className={`secondary-button min-w-[44px] justify-center px-3 py-2 ${
-                                    !whatsappUrl ? 'pointer-events-none opacity-50' : ''
-                                  }`}
-                                  href={whatsappUrl || '#'}
-                                  target="_blank"
-                                >
-                                  <MessageCircleMore size={16} />
-                                </a>
                               </div>
                             </td>
                           </tr>
@@ -653,6 +652,60 @@ export default function RelatoriosPage() {
             </div>
           </div>
         </div>
+
+
+        {actionTicket ? (
+          <div className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-950/45 p-4 sm:items-center">
+            <div className="w-full max-w-md rounded-[28px] border border-white/60 bg-white p-4 shadow-2xl sm:p-5">
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Mais ações</p>
+                  <h3 className="mt-1 text-lg font-semibold text-slate-900">Cupom {actionTicket.shortTicket}</h3>
+                  <p className="mt-1 text-sm text-slate-500">Escolha a ação para esse ticket.</p>
+                </div>
+                <button
+                  className="secondary-button h-10 w-10 justify-center p-0"
+                  onClick={closeActions}
+                  aria-label="Fechar ações"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <Link
+                  className="secondary-button w-full justify-start py-3"
+                  href={`/tickets/${actionTicket.id}`}
+                  onClick={closeActions}
+                >
+                  <Eye size={16} />
+                  Detalhar ticket
+                </Link>
+                <button
+                  className="secondary-button w-full justify-start py-3"
+                  onClick={() => {
+                    openPrintPage(`/print/saida/${actionTicket.id}`);
+                    closeActions();
+                  }}
+                >
+                  <Printer size={16} />
+                  Imprimir cupom
+                </button>
+                <a
+                  className={`secondary-button w-full justify-start py-3 ${
+                    !actionWhatsappUrl ? 'pointer-events-none opacity-50' : ''
+                  }`}
+                  href={actionWhatsappUrl || '#'}
+                  target="_blank"
+                  onClick={closeActions}
+                >
+                  <MessageCircleMore size={16} />
+                  Enviar no WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </div>
     </RoleGuard>
   );

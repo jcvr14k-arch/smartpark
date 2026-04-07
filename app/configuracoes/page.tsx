@@ -15,6 +15,18 @@ type PrinterWidth = '80mm' | '58mm';
 type PrintMethod = 'browser' | 'rawbt';
 type ChargeMode = 'fracionado' | 'integral';
 
+function derivePixCity(address?: string) {
+  const raw = String(address || '').trim();
+  if (!raw) return 'ANGELANDIA';
+
+  const parts = raw
+    .split(/[-,\/]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return (parts[parts.length - 1] || 'ANGELANDIA').toUpperCase();
+}
+
 export default function ConfiguracoesPage() {
   const { profile } = useAuth();
   const [settings, setSettings] = useState<EstablishmentSettings>({
@@ -27,6 +39,9 @@ export default function ConfiguracoesPage() {
     printerWidth: '80mm',
     printMethod: 'browser',
     chargeMode: 'fracionado',
+    pixKey: '',
+    pixReceiverName: '',
+    pixCity: '',
   });
   const [message, setMessage] = useState('');
 
@@ -59,13 +74,19 @@ export default function ConfiguracoesPage() {
 
   async function saveSettings(event: FormEvent) {
     event.preventDefault();
-    await setDoc(tenantDoc(db, profile?.tenantId, 'settings', 'establishment'), settings, { merge: true });
+    const normalizedSettings = {
+      ...settings,
+      pixCity: derivePixCity(settings.address),
+    };
+
+    await setDoc(tenantDoc(db, profile?.tenantId, 'settings', 'establishment'), normalizedSettings, { merge: true });
 
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('smartpark:printerWidth', settings.printerWidth || '80mm');
-      window.localStorage.setItem('smartpark:printMethod', settings.printMethod || 'browser');
+      window.localStorage.setItem('smartpark:printerWidth', normalizedSettings.printerWidth || '80mm');
+      window.localStorage.setItem('smartpark:printMethod', normalizedSettings.printMethod || 'browser');
     }
 
+    setSettings(normalizedSettings);
     setMessage('Configurações salvas com sucesso.');
   }
 
@@ -204,6 +225,32 @@ export default function ConfiguracoesPage() {
             <p className="mt-2 text-xs text-slate-500">
               Fracionado cobra por blocos de 15 minutos. Integral cobra a hora cheia e horas adicionais completas.
             </p>
+          </div>
+
+
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Chave PIX
+            </label>
+            <input
+              className="app-input"
+              value={settings.pixKey || ''}
+              onChange={(e) => setSettings({ ...settings, pixKey: e.target.value })}
+              placeholder="CPF, e-mail, telefone ou chave aleatória"
+            />
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-medium text-slate-700">
+              Recebedor PIX
+            </label>
+            <input
+              className="app-input"
+              value={settings.pixReceiverName || ''}
+              onChange={(e) => setSettings({ ...settings, pixReceiverName: e.target.value })}
+              placeholder="Nome exibido no QR Code"
+            />
           </div>
 
           <div className="md:col-span-2">
