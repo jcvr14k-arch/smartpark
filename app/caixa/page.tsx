@@ -29,12 +29,12 @@ export default function CaixaPage() {
   const [cashRows, setCashRows] = useState<CashRegister[]>([]);
   const [message, setMessage] = useState('');
 
-  const canViewCashHistory = profile?.role === 'admin' || profile?.role === 'suporte';
+  const canViewCashHistory = profile?.role === 'admin';
 
   useEffect(() => {
     let unsubRows: (() => void) | null = null;
 
-    if (profile?.role === 'admin' || profile?.role === 'suporte') {
+    if (profile?.role === 'admin') {
       unsubRows = onSnapshot(tenantCollection(db, profile?.tenantId, 'cashRegisters'), (snap) => {
         const items = snap.docs.map((d) => ({
           id: d.id,

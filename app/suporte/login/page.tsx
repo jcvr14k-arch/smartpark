@@ -17,9 +17,6 @@ export default function SupportLoginPage() {
               Área exclusiva do suporte SmartPark
             </div>
             <h1 className="mt-5 text-3xl font-semibold text-slate-950">Acesso pelo login principal</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              O módulo de suporte agora usa o mesmo login do sistema. Apenas usuários com cargo <strong>suporte</strong> conseguem acessar o painel.
-            </p>
           </div>
 
           <div className="space-y-4 px-8 py-8 md:px-10 md:py-10">
@@ -30,7 +27,7 @@ export default function SupportLoginPage() {
             {profile ? (
               <Link className="primary-button h-12 w-full justify-center" href={profile.role === 'suporte' ? '/suporte/clientes' : '/'}>
                 <ShieldCheck size={16} />
-                Continuar com minha sessão
+                Ir para o painel de suporte
               </Link>
             ) : (
               <Link className="primary-button h-12 w-full justify-center" href="/login">

@@ -59,6 +59,8 @@ export default function ClientsManager() {
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [generatedItem, setGeneratedItem] = useState<ClientTokenItem | null>(null);
+  const [visibleTokenId, setVisibleTokenId] = useState<string | null>(null);
 
   async function loadClients() {
     setLoading(true);
@@ -96,7 +98,9 @@ export default function ClientsManager() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Não foi possível gerar o token.');
       setGeneratedToken(data.token);
-      setItems((current) => [data.item, ...current]);
+      setGeneratedItem({ ...(data.item || {}), token: data.token });
+      setVisibleTokenId(data.item?.id || null);
+      setItems((current) => [{ ...(data.item || {}), token: data.token }, ...current]);
     } catch (err: any) {
       setError(err?.message || 'Erro ao criar cliente.');
     } finally {
@@ -125,6 +129,10 @@ export default function ClientsManager() {
 
   const pendingCount = useMemo(() => items.filter((item) => item.status === 'PENDENTE').length, [items]);
 
+  function canRevealToken(item: ClientTokenItem) {
+    return item.status === 'PENDENTE' && Boolean(item.token);
+  }
+
   return (
     <div className="min-h-screen bg-app px-4 py-6 md:px-6 md:py-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -151,6 +159,7 @@ export default function ClientsManager() {
                 onClick={() => {
                   setModalOpen(true);
                   setGeneratedToken(null);
+                  setGeneratedItem(null);
                   setNome('');
                   setEmail('');
                 }}
@@ -167,6 +176,31 @@ export default function ClientsManager() {
           <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</div>
         ) : null}
 
+
+        {generatedToken && generatedItem ? (
+          <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 p-4 md:p-5">
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h2 className="text-base font-semibold text-emerald-900">Token gerado</h2>
+                <p className="mt-1 text-sm text-emerald-800">Guarde este token ou copie agora. Ele também fica disponível na linha do cliente enquanto estiver pendente.</p>
+                <div className="mt-3 break-all rounded-2xl border border-emerald-200 bg-white px-4 py-3 font-mono text-sm font-semibold text-emerald-900">{generatedToken}</div>
+                <div className="mt-2 text-xs text-emerald-800">Cliente: {generatedItem.nome} • {generatedItem.email}</div>
+              </div>
+
+              <button
+                className="secondary-button self-start"
+                onClick={async () => {
+                  await navigator.clipboard.writeText(generatedToken);
+                }}
+                type="button"
+              >
+                <Copy size={16} />
+                Copiar token
+              </button>
+            </div>
+          </div>
+        ) : null}
+
         <div className="table-shell">
           <table>
             <thead>
@@ -175,6 +209,7 @@ export default function ClientsManager() {
                 <th>E-mail</th>
                 <th>TenantId</th>
                 <th>Status</th>
+                <th>Token</th>
                 <th>Criado em</th>
                 <th>Expira em</th>
                 <th>Ações</th>
@@ -183,7 +218,7 @@ export default function ClientsManager() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-sm text-slate-500">Carregando clientes...</td>
+                  <td colSpan={8} className="py-8 text-center text-sm text-slate-500">Carregando clientes...</td>
                 </tr>
               ) : items.length ? (
                 items.map((item) => (
@@ -195,6 +230,37 @@ export default function ClientsManager() {
                       <span className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${statusClasses(item.status)}`}>
                         {item.status}
                       </span>
+                    </td>
+                    <td className="max-w-[220px]">
+                      {canRevealToken(item) ? (
+                        <div className="flex flex-col gap-2">
+                          <div className="break-all rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-[11px] text-slate-700">
+                            {visibleTokenId === item.id ? item.token : '••••••••••••••••••••••••••••••••'}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              className="secondary-button !min-h-0 px-3 py-2 text-[11px]"
+                              onClick={() => setVisibleTokenId((current) => (current === item.id ? null : item.id))}
+                              type="button"
+                            >
+                              {visibleTokenId === item.id ? 'Ocultar' : 'Ver token'}
+                            </button>
+                            <button
+                              className="secondary-button !min-h-0 px-3 py-2 text-[11px]"
+                              onClick={async () => {
+                                if (!item.token) return;
+                                await navigator.clipboard.writeText(item.token);
+                              }}
+                              type="button"
+                            >
+                              <Copy size={14} />
+                              Copiar
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400">Indisponível</span>
+                      )}
                     </td>
                     <td>{formatDate(item.criadoEm)}</td>
                     <td>{formatDate(item.expiraEm)}</td>
@@ -213,7 +279,7 @@ export default function ClientsManager() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-sm text-slate-500">Nenhum cliente/token cadastrado.</td>
+                  <td colSpan={8} className="py-8 text-center text-sm text-slate-500">Nenhum cliente/token cadastrado.</td>
                 </tr>
               )}
             </tbody>
@@ -251,6 +317,7 @@ export default function ClientsManager() {
                     onClick={() => {
                       setModalOpen(false);
                       setGeneratedToken(null);
+                      setGeneratedItem(null);
                     }}
                     type="button"
                   >
