@@ -155,7 +155,7 @@ export default function SaidaPage() {
       const payload = buildPixPayload({
         key: pixKey,
         receiverName: settings?.pixReceiverName || settings?.name || 'SMARTPARK',
-        city: settings?.pixCity || settings?.address || 'BRASIL',
+        city: settings?.pixCity || settings?.address || 'ANGELANDIA',
         amount: preview.total,
         txid: preview.ticket.shortTicket || preview.ticket.id,
       });

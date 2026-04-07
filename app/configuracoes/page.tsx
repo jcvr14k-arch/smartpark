@@ -15,6 +15,18 @@ type PrinterWidth = '80mm' | '58mm';
 type PrintMethod = 'browser' | 'rawbt';
 type ChargeMode = 'fracionado' | 'integral';
 
+function derivePixCity(address?: string) {
+  const raw = String(address || '').trim();
+  if (!raw) return 'ANGELANDIA';
+
+  const parts = raw
+    .split(/[-,\/]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+  return (parts[parts.length - 1] || 'ANGELANDIA').toUpperCase();
+}
+
 export default function ConfiguracoesPage() {
   const { profile } = useAuth();
   const [settings, setSettings] = useState<EstablishmentSettings>({
@@ -62,13 +74,19 @@ export default function ConfiguracoesPage() {
 
   async function saveSettings(event: FormEvent) {
     event.preventDefault();
-    await setDoc(tenantDoc(db, profile?.tenantId, 'settings', 'establishment'), settings, { merge: true });
+    const normalizedSettings = {
+      ...settings,
+      pixCity: derivePixCity(settings.address),
+    };
+
+    await setDoc(tenantDoc(db, profile?.tenantId, 'settings', 'establishment'), normalizedSettings, { merge: true });
 
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem('smartpark:printerWidth', settings.printerWidth || '80mm');
-      window.localStorage.setItem('smartpark:printMethod', settings.printMethod || 'browser');
+      window.localStorage.setItem('smartpark:printerWidth', normalizedSettings.printerWidth || '80mm');
+      window.localStorage.setItem('smartpark:printMethod', normalizedSettings.printMethod || 'browser');
     }
 
+    setSettings(normalizedSettings);
     setMessage('Configurações salvas com sucesso.');
   }
 
@@ -232,18 +250,6 @@ export default function ConfiguracoesPage() {
               value={settings.pixReceiverName || ''}
               onChange={(e) => setSettings({ ...settings, pixReceiverName: e.target.value })}
               placeholder="Nome exibido no QR Code"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium text-slate-700">
-              Cidade PIX
-            </label>
-            <input
-              className="app-input"
-              value={settings.pixCity || ''}
-              onChange={(e) => setSettings({ ...settings, pixCity: e.target.value })}
-              placeholder="Cidade para o QR Code PIX"
             />
           </div>
 
